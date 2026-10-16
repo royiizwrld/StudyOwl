@@ -54,7 +54,7 @@ describe("bulk merge", () => {
     const r = mergeBulk(subjects, topics, [{ name: " chemistry ", topics: ["bonding", "Moles"] }], opts);
     expect(r.newSubjects).toHaveLength(0);
     expect(r.newTopics.map((t) => t.title)).toEqual(["Moles"]);
-    expect(r.newTopics[0].subjectId).toBe("s1");
+    expect(r.newTopics[0]?.subjectId).toBe("s1");
   });
   it("creates new subjects for unknown names", () => {
     const r = mergeBulk(subjects, topics, [{ name: "Math", topics: ["Limits"] }], opts);

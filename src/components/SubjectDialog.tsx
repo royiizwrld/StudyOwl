@@ -5,17 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useStudy } from "@/lib/store";
-import { SUBJECT_COLORS, type Subject } from "@/lib/types";
+import { colorAt, SUBJECT_COLORS, type Subject } from "@/lib/types";
 
 export function SubjectDialog({ subject, trigger }: { subject?: Subject; trigger: ReactNode }) {
   const { addSubject, updateSubject, subjects } = useStudy();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [color, setColor] = useState(SUBJECT_COLORS[0]);
+  const [color, setColor] = useState(colorAt(0));
   useEffect(() => {
     if (open) {
       setName(subject?.name ?? "");
-      setColor(subject?.color ?? SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length]);
+      setColor(subject?.color ?? colorAt(subjects.length));
     }
   }, [open, subject, subjects.length]);
   const save = () => {

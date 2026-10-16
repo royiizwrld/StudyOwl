@@ -62,7 +62,7 @@ export function BulkAddDialog({ trigger }: { trigger: ReactNode }) {
       if (file) {
         if (file.size > 10 * 1024 * 1024) throw new Error("That file is over 10 MB. Try a smaller file or paste the text.");
         if (file.type.startsWith("text/") || /\.(txt|md|csv)$/i.test(file.name)) {
-          payload.text = `${text}\n\n${await file.text()}`.trim();
+          payload["text"] = `${text}\n\n${await file.text()}`.trim();
         } else if (file.type === "application/pdf" || file.type.startsWith("image/")) {
           payload = { ...payload, file: { dataUrl: await readAsDataUrl(file), mediaType: file.type, name: file.name } };
         } else throw new Error("Please upload a .txt, PDF or image file.");

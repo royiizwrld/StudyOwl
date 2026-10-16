@@ -16,7 +16,7 @@ export const REASONING_OPTIONS = {
 
 /** Create a per-request Responses provider. Returns null when the key is missing. */
 export function createGateway(request: Request) {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) return null;
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
