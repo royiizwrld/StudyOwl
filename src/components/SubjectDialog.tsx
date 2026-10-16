@@ -1,0 +1,69 @@
+import { useEffect, useState, type ReactNode } from "react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { useStudy } from "@/lib/store";
+import { SUBJECT_COLORS, type Subject } from "@/lib/types";
+
+export function SubjectDialog({ subject, trigger }: { subject?: Subject; trigger: ReactNode }) {
+  const { addSubject, updateSubject, subjects } = useStudy();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState(SUBJECT_COLORS[0]);
+  useEffect(() => {
+    if (open) {
+      setName(subject?.name ?? "");
+      setColor(subject?.color ?? SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length]);
+    }
+  }, [open, subject, subjects.length]);
+  const save = () => {
+    if (!name.trim()) return;
+    if (subject) updateSubject(subject.id, { name: name.trim(), color });
+    else addSubject(name, color);
+    setOpen(false);
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{subject ? "Edit subject" : "New subject"}</DialogTitle>
+        </DialogHeader>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save();
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="subj-name">Name</Label>
+            <Input id="subj-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Chemistry" autoFocus />
+          </div>
+          <div className="space-y-2">
+            <Label>Color</Label>
+            <div className="flex flex-wrap gap-2">
+              {SUBJECT_COLORS.map((c) => (
+                <button
+                  type="button"
+                  key={c}
+                  aria-label="Pick color"
+                  onClick={() => setColor(c)}
+                  className={cn("size-8 rounded-full ring-offset-2 ring-offset-background transition", color === c && "ring-2 ring-ring")}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={!name.trim()}>
+              {subject ? "Save" : "Create subject"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

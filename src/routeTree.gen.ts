@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FocusRouteImport } from './routes/focus'
+import { Route as ReviewRouteImport } from './routes/review'
+import { Route as StatsRouteImport } from './routes/stats'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as ApiBulkParseRouteImport } from './routes/api/bulk-parse'
+import { Route as SubjectsIndexRouteImport } from './routes/subjects.index'
+import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FocusRoute = FocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBulkParseRoute = ApiBulkParseRouteImport.update({
+  id: '/api/bulk-parse',
+  path: '/api/bulk-parse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubjectsIndexRoute = SubjectsIndexRouteImport.update({
+  id: '/subjects/',
+  path: '/subjects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
+  id: '/subjects/$subjectId',
+  path: '/subjects/$subjectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/review': typeof ReviewRoute
+  '/stats': typeof StatsRoute
+  '/tasks': typeof TasksRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects/': typeof SubjectsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/review': typeof ReviewRoute
+  '/stats': typeof StatsRoute
+  '/tasks': typeof TasksRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects': typeof SubjectsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/review': typeof ReviewRoute
+  '/stats': typeof StatsRoute
+  '/tasks': typeof TasksRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects/': typeof SubjectsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/focus'
+    | '/review'
+    | '/stats'
+    | '/tasks'
+    | '/api/assistant'
+    | '/api/bulk-parse'
+    | '/subjects/$subjectId'
+    | '/subjects/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/focus'
+    | '/review'
+    | '/stats'
+    | '/tasks'
+    | '/api/assistant'
+    | '/api/bulk-parse'
+    | '/subjects/$subjectId'
+    | '/subjects'
+  id:
+    | '__root__'
+    | '/'
+    | '/focus'
+    | '/review'
+    | '/stats'
+    | '/tasks'
+    | '/api/assistant'
+    | '/api/bulk-parse'
+    | '/subjects/$subjectId'
+    | '/subjects/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FocusRoute: typeof FocusRoute
+  ReviewRoute: typeof ReviewRoute
+  StatsRoute: typeof StatsRoute
+  TasksRoute: typeof TasksRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
+  ApiBulkParseRoute: typeof ApiBulkParseRoute
+  SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
+  SubjectsIndexRoute: typeof SubjectsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/focus': {
+      id: '/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof FocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bulk-parse': {
+      id: '/api/bulk-parse'
+      path: '/api/bulk-parse'
+      fullPath: '/api/bulk-parse'
+      preLoaderRoute: typeof ApiBulkParseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subjects/': {
+      id: '/subjects/'
+      path: '/subjects'
+      fullPath: '/subjects/'
+      preLoaderRoute: typeof SubjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subjects/$subjectId': {
+      id: '/subjects/$subjectId'
+      path: '/subjects/$subjectId'
+      fullPath: '/subjects/$subjectId'
+      preLoaderRoute: typeof SubjectsSubjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FocusRoute: FocusRoute,
+  ReviewRoute: ReviewRoute,
+  StatsRoute: StatsRoute,
+  TasksRoute: TasksRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
+  ApiBulkParseRoute: ApiBulkParseRoute,
+  SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
+  SubjectsIndexRoute: SubjectsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
