@@ -199,3 +199,95 @@ export function mergeBulk(
   }
   return { newSubjects, newTopics };
 }
+
+// ---------- Spaced revision ----------
+export const REVIEW_DAYS = [3, 7, 14] as const;
+const DAY = 86400000;
+
+/** Understood topics whose next 3/7/14-day review checkpoint has arrived. */
+export function dueRevisions<T extends { status: string; understoodAt?: number | null; reviewStage?: number }>(topics: T[], now = Date.now()): T[] {
+  return topics.filter((t) => {
+    if (t.status !== "understood" || !t.understoodAt) return false;
+    const stage = t.reviewStage ?? 0;
+    if (stage >= REVIEW_DAYS.length) return false;
+    return now - t.understoodAt >= REVIEW_DAYS[stage]! * DAY;
+  });
+}
+
+/** Status change side effects: entering Understood starts the review clock. */
+export function withStatus<T extends { status: string; understoodAt?: number | null; reviewStage?: number }>(t: T, status: T["status"], now = Date.now()): T {
+  if (t.status === status) return t;
+  if (status === "understood") return { ...t, status, understoodAt: now, reviewStage: 0 };
+  return { ...t, status, understoodAt: null, reviewStage: 0 };
+}
+
+// ---------- Scores ----------
+export const pct = (s: { score: number; outOf: number }) => (s.outOf > 0 ? (s.score / s.outOf) * 100 : 0);
+export function averagePct(scores: { score: number; outOf: number }[]): number | null {
+  if (!scores.length) return null;
+  return Math.round(scores.reduce((a, s) => a + pct(s), 0) / scores.length);
+}
+
+export function daysUntil(iso: string, now = new Date()): number {
+  const a = new Date(iso + "T00:00:00");
+  const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((a.getTime() - b.getTime()) / DAY);
+}
+
+// ---------- Weak spots ----------
+export interface WeakSpot {
+  kind: "subject" | "topic";
+  id: string;
+  subjectId: string;
+  name: string;
+  score: number;
+  reasons: string[];
+}
+
+export function weakSpots(
+  d: {
+    subjects: { id: string; name: string; examDate?: string | null }[];
+    topics: { id: string; subjectId: string; title: string; status: string; flagged: boolean; dueDate: string | null; priority: string }[];
+    scores: { subjectId: string; score: number; outOf: number }[];
+    sessions: { subjectId: string | null; startedAt: number; minutes: number }[];
+  },
+  now = new Date(),
+  limit = 3,
+): WeakSpot[] {
+  const out: WeakSpot[] = [];
+  const weekAgo = now.getTime() - 7 * DAY;
+  for (const s of d.subjects) {
+    const ts = d.topics.filter((t) => t.subjectId === s.id);
+    const reasons: string[] = [];
+    let score = 0;
+    const avg = averagePct(d.scores.filter((x) => x.subjectId === s.id));
+    if (avg !== null && avg < 70) { score += (70 - avg) * 1.5; reasons.push(`average score ${avg}%`); }
+    if (ts.length) {
+      const done = Math.round((ts.filter((t) => t.status === "understood").length / ts.length) * 100);
+      if (done < 50) { score += (50 - done) * 0.6; reasons.push(`${done}% understood`); }
+    }
+    const flagged = ts.filter((t) => t.flagged).length;
+    if (flagged) { score += flagged * 6; reasons.push(`${flagged} flagged`); }
+    const recent = d.sessions.filter((x) => x.subjectId === s.id && x.startedAt >= weekAgo).reduce((a, x) => a + x.minutes, 0);
+    if (ts.length && recent < 30) { score += 10; reasons.push(`${recent} min studied this week`); }
+    if (s.examDate) {
+      const days = daysUntil(s.examDate, now);
+      if (days >= 0 && days <= 21) { score = score * 1.5 + (21 - days) * 1.5; reasons.push(`exam in ${days} day${days === 1 ? "" : "s"}`); }
+    }
+    if (score > 0 && reasons.length) out.push({ kind: "subject", id: s.id, subjectId: s.id, name: s.name, score, reasons });
+  }
+  for (const t of d.topics) {
+    if (t.status === "understood") continue;
+    const reasons: string[] = [];
+    let score = 0;
+    if (t.flagged) { score += 15; reasons.push("flagged for review"); }
+    if (t.dueDate) {
+      const days = daysUntil(t.dueDate, now);
+      if (days < 0) { score += 30; reasons.push("overdue"); }
+      else if (days <= 3) { score += 20 - days * 3; reasons.push(`due in ${days} day${days === 1 ? "" : "s"}`); }
+    }
+    if (reasons.length && t.priority === "high") { score += 8; reasons.push("high priority"); }
+    if (score >= 20) out.push({ kind: "topic", id: t.id, subjectId: t.subjectId, name: t.title, score, reasons });
+  }
+  return out.sort((a, b) => b.score - a.score).slice(0, limit);
+}

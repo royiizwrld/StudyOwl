@@ -7,6 +7,7 @@ export interface Subject {
   name: string;
   color: string;
   createdAt: number;
+  examDate?: string | null; // yyyy-MM-dd
   sample?: boolean;
 }
 
@@ -19,6 +20,8 @@ export interface Topic {
   status: TopicStatus;
   flagged: boolean;
   flaggedAt: number | null;
+  understoodAt?: number | null;
+  reviewStage?: number; // spaced reviews done (0-3)
   createdAt: number;
   sample?: boolean;
 }
@@ -62,7 +65,29 @@ export interface StudyData {
   sessions: FocusSession[];
   settings: TimerSettings;
   dailyGoal: number;
+  scores: TestScore[];
 }
+
+export type ScoreType = "major_exam" | "practice_test" | "cat" | "quiz";
+
+export interface TestScore {
+  id: string;
+  subjectId: string;
+  title: string;
+  type: ScoreType;
+  score: number;
+  outOf: number;
+  date: string; // yyyy-MM-dd
+  notes?: string;
+  sample?: boolean;
+}
+
+export const SCORE_TYPE_LABEL: Record<ScoreType, string> = {
+  major_exam: "Major exam",
+  practice_test: "Practice test",
+  cat: "School CAT",
+  quiz: "Quiz",
+};
 
 export const STATUS_LABEL: Record<TopicStatus, string> = {
   not_started: "Not started",
