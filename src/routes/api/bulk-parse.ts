@@ -41,7 +41,6 @@ export const Route = createFileRoute("/api/bulk-parse")({
         const gw = createGateway(request);
         if (!gw) return json(500, { error: "The AI service isn't configured." });
 
-        const content: Exclude<ModelMessage & { role: "user" }, never>["content"] = [];
         const parts: Array<
           { type: "text"; text: string } | { type: "file"; data: string; mediaType: string; filename?: string }
         > = [];
@@ -52,7 +51,6 @@ export const Route = createFileRoute("/api/bulk-parse")({
         if (body.file) {
           parts.push({ type: "file", data: body.file.dataUrl, mediaType: body.file.mediaType, filename: body.file.name });
         }
-        void content;
 
         try {
           const result = streamText({

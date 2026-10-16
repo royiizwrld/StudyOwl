@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as ApiBulkParseRouteImport } from './routes/api/bulk-parse'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBulkParseRoute = ApiBulkParseRouteImport.update({
+  id: '/api/bulk-parse',
+  path: '/api/bulk-parse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/bulk-parse': typeof ApiBulkParseRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/assistant' | '/api/bulk-parse'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/assistant' | '/api/bulk-parse'
+  id: '__root__' | '/' | '/api/assistant' | '/api/bulk-parse'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
+  ApiBulkParseRoute: typeof ApiBulkParseRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bulk-parse': {
+      id: '/api/bulk-parse'
+      path: '/api/bulk-parse'
+      fullPath: '/api/bulk-parse'
+      preLoaderRoute: typeof ApiBulkParseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
+  ApiBulkParseRoute: ApiBulkParseRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
