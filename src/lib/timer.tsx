@@ -71,8 +71,10 @@ function useTimerValue() {
 
   const remaining = state.running && state.endsAt ? remainingFrom(state.endsAt, now) : state.remainingMs;
 
-  const finishInterval = useCallback((s: TimerState, completed: boolean, at: number): TimerState => {
-    const cfg = settingsRef.current;
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  const logElapsed = useCallback((s: TimerState, completed: boolean, at: number) => {
     const elapsed = s.durationMs - (s.running && s.endsAt ? remainingFrom(s.endsAt, at) : s.remainingMs);
     if (s.mode === "focus" && elapsed >= 60000) {
       logSession({
@@ -80,25 +82,32 @@ function useTimerValue() {
         endedAt: at, minutes: Math.round(elapsed / 60000), completed,
       });
     }
+  }, [logSession]);
+
+  const advance = (s: TimerState, completed: boolean, at: number): TimerState => {
+    const cfg = settingsRef.current;
     const completedFocus = s.mode === "focus" && completed ? s.completedFocus + 1 : s.completedFocus;
     const mode: TimerMode = s.mode === "focus" ? (completed ? nextBreak(completedFocus, cfg) : "focus") : "focus";
     const ms = modeMinutes(mode, cfg) * 60000;
     const auto = completed && cfg.autoStart;
     return { ...s, mode, completedFocus, durationMs: ms, remainingMs: ms, running: auto, endsAt: auto ? at + ms : null, startedAt: auto ? at : null };
-  }, [logSession]);
+  };
 
-  // ticking + completion
+  // ticking + completion (side effects outside state updaters)
   useEffect(() => {
     if (!state.running) return;
     const tick = () => {
       const t = Date.now();
       setNow(t);
-      setState((s) => {
-        if (!s.running || !s.endsAt || s.endsAt > t) return s;
-        if (!settingsRef.current.muted) beep();
-        toast(s.mode === "focus" ? "Focus session complete — time for a break" : "Break over — back to focus");
-        return finishInterval(s, true, s.endsAt);
-      });
+      const s = stateRef.current;
+      if (!s.running || !s.endsAt || s.endsAt > t) return;
+      const at = s.endsAt;
+      logElapsed(s, true, at);
+      if (!settingsRef.current.muted) beep();
+      toast(s.mode === "focus" ? "Focus session complete — time for a break" : "Break over — back to focus");
+      const next = advance(s, true, at);
+      stateRef.current = next;
+      setState(next);
     };
     tick();
     const id = setInterval(tick, 250);
@@ -107,24 +116,27 @@ function useTimerValue() {
       clearInterval(id);
       document.removeEventListener("visibilitychange", tick);
     };
-  }, [state.running, finishInterval]);
+  }, [state.running, logElapsed]);
 
-  const start = () => setState((s) => {
+  const start = () => {
     const t = Date.now();
     setNow(t);
-    return { ...s, running: true, endsAt: t + s.remainingMs, startedAt: s.startedAt ?? t };
-  });
+    setState((s) => ({ ...s, running: true, endsAt: t + s.remainingMs, startedAt: s.startedAt ?? t }));
+  };
   const pause = () => setState((s) => ({ ...s, running: false, remainingMs: s.endsAt ? remainingFrom(s.endsAt, Date.now()) : s.remainingMs, endsAt: null }));
-  const reset = () => setState((s) => {
+  const reset = () => {
     const t = Date.now();
-    const elapsed = s.durationMs - (s.running && s.endsAt ? remainingFrom(s.endsAt, t) : s.remainingMs);
-    if (s.mode === "focus" && elapsed >= 60000) {
-      logSession({ subjectId: s.subjectId, topicId: s.topicId, startedAt: s.startedAt ?? t - elapsed, endedAt: t, minutes: Math.round(elapsed / 60000), completed: false });
-    }
+    const s = stateRef.current;
+    logElapsed(s, false, t);
     const ms = modeMinutes(s.mode, settingsRef.current) * 60000;
-    return { ...s, running: false, endsAt: null, remainingMs: ms, durationMs: ms, startedAt: null };
-  });
-  const skip = () => setState((s) => finishInterval(s, s.mode !== "focus", Date.now()));
+    setState({ ...s, running: false, endsAt: null, remainingMs: ms, durationMs: ms, startedAt: null });
+  };
+  const skip = () => {
+    const t = Date.now();
+    const s = stateRef.current;
+    if (s.mode === "focus") logElapsed(s, false, t);
+    setState(advance(s, s.mode !== "focus", t));
+  };
   const setTarget = (subjectId: string | null, topicId: string | null) => setState((s) => ({ ...s, subjectId, topicId }));
 
   /** Apply new settings. If `toCurrent`, also resize the interval in progress. */
