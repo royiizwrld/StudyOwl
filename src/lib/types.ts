@@ -86,3 +86,5 @@ export const SUBJECT_COLORS = [
   "oklch(0.58 0.14 20)",
   "oklch(0.55 0.05 260)",
 ];
+
+export const colorAt = (i: number): string => SUBJECT_COLORS[((i % SUBJECT_COLORS.length) + SUBJECT_COLORS.length) % SUBJECT_COLORS.length] ?? "oklch(0.6 0.09 150)";

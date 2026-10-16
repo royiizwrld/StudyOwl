@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { addDays, format } from "date-fns";
 import { clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, type BulkDraftSubject } from "./logic";
 import {
-  SUBJECT_COLORS,
+  colorAt,
   type FocusSession,
   type Priority,
   type StudyData,
@@ -42,7 +42,7 @@ function seed(): StudyData {
   }));
   return {
     ...EMPTY,
-    subjects: [{ id: sid, name: "Biology (sample)", color: SUBJECT_COLORS[0], createdAt: now, sample: true }],
+    subjects: [{ id: sid, name: "Biology (sample)", color: colorAt(0), createdAt: now, sample: true }],
     topics: [
       t("Cell structure", "understood", "medium", null),
       t("Photosynthesis", "studying", "high", d(3), true, 5),
@@ -147,7 +147,7 @@ function useStoreValue() {
       update((d) => {
         const { newSubjects, newTopics } = mergeBulk(d.subjects, d.topics, draft, {
           ...opts,
-          colorFor: (i) => SUBJECT_COLORS[i % SUBJECT_COLORS.length],
+          colorFor: colorAt,
           newId: uid,
           now: Date.now(),
         });
