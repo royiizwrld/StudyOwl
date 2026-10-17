@@ -1,3 +1,4 @@
+import { ExamBadge } from "@/components/ExamBadge";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -58,6 +59,7 @@ function SubjectPage() {
           <div className="flex items-center gap-3">
             <SubjectDot color={subject.color} className="size-4" />
             <h1 className="text-2xl font-semibold">{subject.name}</h1>
+            {subject.examDate && <ExamBadge date={subject.examDate} />}
           </div>
           <div className="flex gap-1">
             <SubjectDialog subject={subject} trigger={<Button variant="ghost" size="icon" aria-label="Edit subject"><Pencil /></Button>} />
