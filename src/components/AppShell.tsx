@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, BookOpen, CheckSquare, LayoutDashboard, Moon, Star, Sun, Timer } from "lucide-react";
+import { BarChart3, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Moon, Star, Sun, Timer } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ const NAV = [
   { to: "/subjects", label: "Subjects", icon: BookOpen },
   { to: "/tasks", label: "Tasks", icon: CheckSquare },
   { to: "/review", label: "Review", icon: Star },
+  { to: "/scores", label: "Scores", icon: GraduationCap },
   { to: "/focus", label: "Focus", icon: Timer },
   { to: "/stats", label: "Stats", icon: BarChart3 },
 ] as const;
@@ -89,7 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-12">{children}</main>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-background/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t bg-background/95 backdrop-blur md:hidden">
         {NAV.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}

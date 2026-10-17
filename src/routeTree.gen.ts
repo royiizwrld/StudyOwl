@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FocusRouteImport } from './routes/focus'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as ScoresRouteImport } from './routes/scores'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
@@ -32,6 +33,11 @@ const FocusRoute = FocusRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScoresRoute = ScoresRouteImport.update({
+  id: '/scores',
+  path: '/scores',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatsRoute = StatsRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/focus': typeof FocusRoute
   '/review': typeof ReviewRoute
+  '/scores': typeof ScoresRoute
   '/stats': typeof StatsRoute
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/focus': typeof FocusRoute
   '/review': typeof ReviewRoute
+  '/scores': typeof ScoresRoute
   '/stats': typeof StatsRoute
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/focus': typeof FocusRoute
   '/review': typeof ReviewRoute
+  '/scores': typeof ScoresRoute
   '/stats': typeof StatsRoute
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/focus'
     | '/review'
+    | '/scores'
     | '/stats'
     | '/tasks'
     | '/api/assistant'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/focus'
     | '/review'
+    | '/scores'
     | '/stats'
     | '/tasks'
     | '/api/assistant'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/focus'
     | '/review'
+    | '/scores'
     | '/stats'
     | '/tasks'
     | '/api/assistant'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FocusRoute: typeof FocusRoute
   ReviewRoute: typeof ReviewRoute
+  ScoresRoute: typeof ScoresRoute
   StatsRoute: typeof StatsRoute
   TasksRoute: typeof TasksRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scores': {
+      id: '/scores'
+      path: '/scores'
+      fullPath: '/scores'
+      preLoaderRoute: typeof ScoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stats': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FocusRoute: FocusRoute,
   ReviewRoute: ReviewRoute,
+  ScoresRoute: ScoresRoute,
   StatsRoute: StatsRoute,
   TasksRoute: TasksRoute,
   ApiAssistantRoute: ApiAssistantRoute,

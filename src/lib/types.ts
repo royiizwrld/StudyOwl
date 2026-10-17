@@ -78,7 +78,7 @@ export interface TestScore {
   score: number;
   outOf: number;
   date: string; // yyyy-MM-dd
-  notes?: string;
+  notes?: string | undefined;
   sample?: boolean;
 }
 

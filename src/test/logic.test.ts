@@ -61,3 +61,31 @@ describe("bulk merge", () => {
     expect(r.newSubjects.map((s) => s.name)).toEqual(["Math"]);
   });
 });
+
+import { dueRevisions, weakSpots, withStatus, averagePct } from "@/lib/logic";
+describe("spaced revision", () => {
+  const D = 86400000, now = 100 * D;
+  const t = (ago: number, stage = 0) => ({ status: "understood", understoodAt: now - ago * D, reviewStage: stage });
+  it("resurfaces after 3, 7 and 14 days", () => {
+    expect(dueRevisions([t(2)], now)).toHaveLength(0);
+    expect(dueRevisions([t(3)], now)).toHaveLength(1);
+    expect(dueRevisions([t(6, 1)], now)).toHaveLength(0);
+    expect(dueRevisions([t(7, 1)], now)).toHaveLength(1);
+    expect(dueRevisions([t(14, 2)], now)).toHaveLength(1);
+    expect(dueRevisions([t(30, 3)], now)).toHaveLength(0);
+  });
+  it("marking understood starts the clock", () => {
+    const r = withStatus({ status: "studying" as string, understoodAt: null }, "understood", 5);
+    expect(r.understoodAt).toBe(5);
+  });
+});
+describe("weak spots", () => {
+  it("returns at most 3 and ranks low scores", () => {
+    const subjects = ["a", "b", "c", "d"].map((id) => ({ id, name: id }));
+    const scores = [{ subjectId: "a", score: 20, outOf: 100 }, { subjectId: "b", score: 95, outOf: 100 }];
+    const r = weakSpots({ subjects, topics: [], scores, sessions: [] });
+    expect(r[0]?.id).toBe("a");
+    expect(r.length).toBeLessThanOrEqual(3);
+    expect(averagePct(scores)).toBe(58);
+  });
+});

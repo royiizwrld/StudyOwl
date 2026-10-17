@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { BookmarkCheck } from "lucide-react";
 import { ProgressBar, SubjectDot } from "@/components/ui-bits";
 import { subjectProgress } from "@/lib/logic";
+import { ExamBadge } from "@/components/ExamBadge";
 import { useStudy } from "@/lib/store";
 import type { Subject } from "@/lib/types";
 
@@ -25,6 +26,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
           </span>
         )}
       </div>
+      {subject.examDate && <ExamBadge date={subject.examDate} className="mb-3" />}
       <ProgressBar value={p.pct} color={subject.color} />
       <div className="mt-2 flex justify-between text-xs text-muted-foreground">
         <span>

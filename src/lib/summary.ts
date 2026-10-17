@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { computeStreaks, minutesBySubject, minutesInRange, todayStart } from "./logic";
+import { averagePct, dueRevisions, weakSpots, computeStreaks, minutesBySubject, minutesInRange, todayStart } from "./logic";
 import type { StudyData } from "./types";
 
 /** Compact snapshot of the user's data sent with each assistant message. */
@@ -19,6 +19,9 @@ export function buildSummary(d: StudyData) {
       return {
         id: s.id,
         name: s.name,
+        exam_in_days: s.examDate ? daysUntil(s.examDate) : null,
+        avg_score_pct: averagePct(d.scores.filter((x) => x.subjectId === s.id)),
+        recent_scores: d.scores.filter((x) => x.subjectId === s.id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((x) => ({ title: x.title, type: x.type, pct: x.outOf ? Math.round((x.score / x.outOf) * 100) : 0, date: x.date })),
         topics_total: ts.length,
         not_started: count("not_started"),
         studying: count("studying"),
@@ -50,5 +53,7 @@ export function buildSummary(d: StudyData) {
     daily_goal_min: d.dailyGoal,
     streak: computeStreaks(d.sessions),
     pomodoro: d.settings,
+    weak_spots: weakSpots(d).map((w) => ({ kind: w.kind, name: w.name, reasons: w.reasons })),
+    revisions_due: dueRevisions(d.topics).map((t) => t.title),
   };
 }
