@@ -120,7 +120,7 @@ function ScoreDialog({ score, trigger }: { score?: TestScore; trigger: ReactNode
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string | undefined }) {
   return (
     <div className="card-surface p-5">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
