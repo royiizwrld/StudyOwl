@@ -4,6 +4,7 @@ import { Plus, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BulkAddDialog } from "@/components/BulkAddDialog";
 import { GoalCard } from "@/components/GoalCard";
+import { RevisionCard, WeakSpotsCard } from "@/components/InsightCards";
 import { Pomodoro } from "@/components/pomodoro/Pomodoro";
 import { StreakCard } from "@/components/StreakCard";
 import { SubjectCard } from "@/components/SubjectCard";
@@ -67,6 +68,11 @@ function Dashboard() {
         <GoalCard />
         <StreakCard />
         <Pomodoro compact />
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <WeakSpotsCard />
+        <RevisionCard />
       </div>
 
       <section className="mt-8">

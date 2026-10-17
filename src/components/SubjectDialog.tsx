@@ -12,16 +12,21 @@ export function SubjectDialog({ subject, trigger }: { subject?: Subject; trigger
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [color, setColor] = useState(colorAt(0));
+  const [exam, setExam] = useState("");
   useEffect(() => {
     if (open) {
       setName(subject?.name ?? "");
       setColor(subject?.color ?? colorAt(subjects.length));
+      setExam(subject?.examDate ?? "");
     }
   }, [open, subject, subjects.length]);
   const save = () => {
     if (!name.trim()) return;
-    if (subject) updateSubject(subject.id, { name: name.trim(), color });
-    else addSubject(name, color);
+    if (subject) updateSubject(subject.id, { name: name.trim(), color, examDate: exam || null });
+    else {
+      const s = addSubject(name, color);
+      if (exam) updateSubject(s.id, { examDate: exam });
+    }
     setOpen(false);
   };
   return (
@@ -41,6 +46,10 @@ export function SubjectDialog({ subject, trigger }: { subject?: Subject; trigger
           <div className="space-y-2">
             <Label htmlFor="subj-name">Name</Label>
             <Input id="subj-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Chemistry" autoFocus />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="subj-exam">Exam date (optional)</Label>
+            <Input id="subj-exam" type="date" value={exam} onChange={(e) => setExam(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Color</Label>
