@@ -228,6 +228,40 @@ export function averagePct(scores: { score: number; outOf: number }[]): number |
   return Math.round(scores.reduce((a, s) => a + pct(s), 0) / scores.length);
 }
 
+/** Scores that count towards the overall average. */
+export function countedScores<T extends { includeInAverage?: boolean; periodId?: string | null }>(
+  scores: T[],
+  periods: { id: string; includeInOverall: boolean }[] = [],
+): T[] {
+  return scores.filter((s) => {
+    if (s.includeInAverage === false) return false;
+    if (s.periodId) {
+      const p = periods.find((x) => x.id === s.periodId);
+      if (p && !p.includeInOverall) return false;
+    }
+    return true;
+  });
+}
+
+/** Composite grade (%) of an exam period, or null if nothing is marked yet. */
+export function periodGrade(
+  period: { id: string; method: "average" | "weighted" | "manual"; manualPct: number | null },
+  papers: { periodId: string | null; weight: number; scoreId: string | null }[],
+  scores: { id: string; score: number; outOf: number }[],
+): number | null {
+  if (period.method === "manual") return period.manualPct ?? null;
+  let sum = 0, w = 0;
+  for (const p of papers) {
+    if (p.periodId !== period.id || !p.scoreId) continue;
+    const sc = scores.find((s) => s.id === p.scoreId);
+    if (!sc) continue;
+    const weight = period.method === "weighted" ? Math.max(0, p.weight || 0) : 1;
+    sum += pct(sc) * weight;
+    w += weight;
+  }
+  return w > 0 ? Math.round(sum / w) : null;
+}
+
 export function daysUntil(iso: string, now = new Date()): number {
   const a = new Date(iso + "T00:00:00");
   const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -250,6 +284,7 @@ export function weakSpots(
     topics: { id: string; subjectId: string; title: string; status: string; flagged: boolean; dueDate: string | null; priority: string }[];
     scores: { subjectId: string; score: number; outOf: number }[];
     sessions: { subjectId: string | null; startedAt: number; minutes: number }[];
+    papers?: { subjectId: string; date: string; scoreId: string | null }[];
   },
   now = new Date(),
   limit = 3,
@@ -270,8 +305,11 @@ export function weakSpots(
     if (flagged) { score += flagged * 6; reasons.push(`${flagged} flagged`); }
     const recent = d.sessions.filter((x) => x.subjectId === s.id && x.startedAt >= weekAgo).reduce((a, x) => a + x.minutes, 0);
     if (ts.length && recent < 30) { score += 10; reasons.push(`${recent} min studied this week`); }
-    if (s.examDate) {
-      const days = daysUntil(s.examDate, now);
+    const examDates = [s.examDate, ...(d.papers ?? []).filter((p) => p.subjectId === s.id && !p.scoreId).map((p) => p.date)]
+      .filter((x): x is string => !!x && daysUntil(x, now) >= 0)
+      .sort();
+    if (examDates[0]) {
+      const days = daysUntil(examDates[0], now);
       if (days >= 0 && days <= 21) { score = score * 1.5 + (21 - days) * 1.5; reasons.push(`exam in ${days} day${days === 1 ? "" : "s"}`); }
     }
     if (score > 0 && reasons.length) out.push({ kind: "subject", id: s.id, subjectId: s.id, name: s.name, score, reasons });

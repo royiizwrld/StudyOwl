@@ -66,6 +66,46 @@ export interface StudyData {
   settings: TimerSettings;
   dailyGoal: number;
   scores: TestScore[];
+  examPeriods: ExamPeriod[];
+  papers: ExamPaper[];
+  gradeGoals: GradeGoals;
+}
+
+export type GradeMethod = "average" | "weighted" | "manual";
+
+/** A group of exam papers graded together, e.g. "Term 1 Midterms". */
+export interface ExamPeriod {
+  id: string;
+  name: string;
+  type: ScoreType;
+  startDate: string | null;
+  endDate: string | null;
+  target: number | null; // %
+  method: GradeMethod;
+  manualPct: number | null;
+  gradingNotes?: string | undefined; // free text for Ollie, e.g. "Math 40%, English 60%"
+  includeInOverall: boolean;
+  sample?: boolean;
+}
+
+/** One sitting (usually one subject) — standalone when periodId is null. */
+export interface ExamPaper {
+  id: string;
+  periodId: string | null;
+  subjectId: string;
+  title: string;
+  type: ScoreType;
+  date: string; // yyyy-MM-dd
+  target: number | null; // %
+  weight: number; // relative weight within its period
+  scoreId: string | null; // linked TestScore once marks are entered
+  sample?: boolean;
+}
+
+export interface GradeGoals {
+  overallTarget: number | null; // %
+  maskTarget: boolean;
+  hideComparison: boolean;
 }
 
 export type ScoreType = "major_exam" | "practice_test" | "cat" | "quiz";
@@ -79,6 +119,9 @@ export interface TestScore {
   outOf: number;
   date: string; // yyyy-MM-dd
   notes?: string | undefined;
+  includeInAverage?: boolean; // default true
+  periodId?: string | null;
+  paperId?: string | null;
   sample?: boolean;
 }
 
