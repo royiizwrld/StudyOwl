@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { averagePct, dueRevisions, weakSpots, computeStreaks, minutesBySubject, minutesInRange, todayStart } from "./logic";
+import { averagePct, countedScores, periodGrade, dueRevisions, weakSpots, computeStreaks, minutesBySubject, minutesInRange, todayStart } from "./logic";
 import type { StudyData } from "./types";
 
 /** Compact snapshot of the user's data sent with each assistant message. */
@@ -55,5 +55,35 @@ export function buildSummary(d: StudyData) {
     pomodoro: d.settings,
     weak_spots: weakSpots(d).map((w) => ({ kind: w.kind, name: w.name, reasons: w.reasons })),
     revisions_due: dueRevisions(d.topics).map((t) => t.title),
+    overall_avg_pct: averagePct(countedScores(d.scores, d.examPeriods)),
+    grade_goals: {
+      overall_target_pct: d.gradeGoals.hideComparison ? "hidden by student" : d.gradeGoals.overallTarget,
+      gentle_mode: d.gradeGoals.hideComparison,
+    },
+    exam_periods: d.examPeriods.map((p) => ({
+      name: p.name,
+      type: p.type,
+      start: p.startDate,
+      end: p.endDate,
+      target_pct: d.gradeGoals.hideComparison ? null : p.target,
+      grading_method: p.method,
+      grading_notes: p.gradingNotes ?? null,
+      counts_to_overall: p.includeInOverall,
+      composite_pct: periodGrade(p, d.papers, d.scores),
+      papers: d.papers.filter((x) => x.periodId === p.id).map((x) => paperInfo(x)),
+    })),
+    standalone_upcoming: d.papers.filter((x) => !x.periodId && !x.scoreId).map((x) => paperInfo(x)),
   };
+  function paperInfo(x: StudyData["papers"][number]) {
+    const sc = d.scores.find((s) => s.id === x.scoreId);
+    return {
+      title: x.title,
+      subject: d.subjects.find((s) => s.id === x.subjectId)?.name ?? null,
+      date: x.date,
+      in_days: daysUntil(x.date),
+      weight: x.weight,
+      target_pct: d.gradeGoals.hideComparison ? null : x.target,
+      actual_pct: sc ? Math.round((sc.score / sc.outOf) * 100) : null,
+    };
+  }
 }

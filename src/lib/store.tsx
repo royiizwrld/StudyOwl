@@ -3,7 +3,10 @@ import { addDays, format } from "date-fns";
 import { clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, withStatus, type BulkDraftSubject } from "./logic";
 import {
   colorAt,
+  type ExamPaper,
+  type ExamPeriod,
   type FocusSession,
+  type GradeGoals,
   type Priority,
   type StudyData,
   type Subject,
@@ -15,6 +18,7 @@ import {
 } from "./types";
 
 const KEY = "study-planner:v1";
+export const DEFAULT_GRADE_GOALS: GradeGoals = { overallTarget: null, maskTarget: false, hideComparison: false };
 export const uid = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID().slice(0, 8)
@@ -28,11 +32,15 @@ const EMPTY: StudyData = {
   settings: DEFAULT_SETTINGS,
   dailyGoal: DEFAULT_DAILY_GOAL,
   scores: [],
+  examPeriods: [],
+  papers: [],
+  gradeGoals: DEFAULT_GRADE_GOALS,
 };
 
 function seed(): StudyData {
   const now = Date.now();
   const sid = uid();
+  const pid = uid();
   const d = (n: number) => format(addDays(new Date(), n), "yyyy-MM-dd");
   const t = (title: string, status: TopicStatus, priority: Priority, due: string | null, flagged = false, flagDaysAgo = 0): Topic => ({
     id: uid(), subjectId: sid, title, status, priority, dueDate: due, flagged,
@@ -55,6 +63,11 @@ function seed(): StudyData {
     ],
     tasks: [{ id: uid(), title: "Submit lab report", subjectId: sid, priority: "high", dueDate: d(2), done: false, createdAt: now, sample: true }],
     sessions,
+    examPeriods: [{ id: pid, name: "Term 1 Midterms (sample)", type: "major_exam", startDate: d(16), endDate: d(22), target: 75, method: "average", manualPct: null, includeInOverall: true, sample: true }],
+    papers: [
+      { id: uid(), periodId: pid, subjectId: sid, title: "Biology Paper 1", type: "major_exam", date: d(18), target: 75, weight: 1, scoreId: null, sample: true },
+      { id: uid(), periodId: pid, subjectId: sid, title: "Biology Paper 2 (practical)", type: "major_exam", date: d(21), target: 70, weight: 1, scoreId: null, sample: true },
+    ],
     scores: [
       { id: uid(), subjectId: sid, title: "Cells quiz", type: "quiz", score: 14, outOf: 20, date: d(-9), sample: true },
       { id: uid(), subjectId: sid, title: "Term 1 CAT", type: "cat", score: 52, outOf: 100, date: d(-4), sample: true },
@@ -75,6 +88,9 @@ function load(): StudyData {
       settings: clampSettings({ ...DEFAULT_SETTINGS, ...(p.settings ?? {}) }),
       dailyGoal: p.dailyGoal ?? DEFAULT_DAILY_GOAL,
       scores: p.scores ?? [],
+      examPeriods: p.examPeriods ?? [],
+      papers: p.papers ?? [],
+      gradeGoals: { ...DEFAULT_GRADE_GOALS, ...(p.gradeGoals ?? {}) },
     };
   } catch {
     return seed();
@@ -113,6 +129,7 @@ function useStoreValue() {
         subjects: d.subjects.filter((s) => s.id !== id),
         topics: d.topics.filter((t) => t.subjectId !== id),
         scores: d.scores.filter((s) => s.subjectId !== id),
+        papers: d.papers.filter((p) => p.subjectId !== id),
         tasks: d.tasks.map((t) => (t.subjectId === id ? { ...t, subjectId: null } : t)),
       })),
     addTopic: (t: Omit<Topic, "id" | "createdAt" | "flagged" | "flaggedAt"> & { flagged?: boolean }) =>
@@ -145,7 +162,57 @@ function useStoreValue() {
     addScore: (s: Omit<TestScore, "id">) => update((d) => ({ ...d, scores: [...d.scores, { ...s, id: uid() }] })),
     updateScore: (id: string, patch: Partial<TestScore>) =>
       update((d) => ({ ...d, scores: d.scores.map((s) => (s.id === id ? { ...s, ...patch } : s)) })),
-    deleteScore: (id: string) => update((d) => ({ ...d, scores: d.scores.filter((s) => s.id !== id) })),
+    deleteScore: (id: string) =>
+      update((d) => ({
+        ...d,
+        scores: d.scores.filter((s) => s.id !== id),
+        papers: d.papers.map((p) => (p.scoreId === id ? { ...p, scoreId: null } : p)),
+      })),
+    savePeriod: (p: Omit<ExamPeriod, "id"> & { id?: string }) => {
+      const id = p.id ?? uid();
+      update((d) => {
+        const exists = d.examPeriods.some((x) => x.id === id);
+        const next = { ...p, id } as ExamPeriod;
+        return { ...d, examPeriods: exists ? d.examPeriods.map((x) => (x.id === id ? next : x)) : [...d.examPeriods, next] };
+      });
+      return id;
+    },
+    deletePeriod: (id: string, keepScores: boolean) =>
+      update((d) => {
+        const paperIds = d.papers.filter((p) => p.periodId === id).map((p) => p.id);
+        return {
+          ...d,
+          examPeriods: d.examPeriods.filter((x) => x.id !== id),
+          papers: d.papers.filter((p) => p.periodId !== id),
+          scores: keepScores
+            ? d.scores.map((s) => (s.periodId === id ? { ...s, periodId: null, paperId: null } : s))
+            : d.scores.filter((s) => s.periodId !== id && !paperIds.includes(s.paperId ?? "")),
+        };
+      }),
+    /** Save an exam paper; when marks are given they sync into the Scores history automatically. */
+    savePaper: (p: Omit<ExamPaper, "id" | "scoreId"> & { id?: string }, marks: { score: number; outOf: number } | null) =>
+      update((d) => {
+        const id = p.id ?? uid();
+        const prev = d.papers.find((x) => x.id === id);
+        let scoreId = prev?.scoreId ?? null;
+        let scores = d.scores;
+        if (marks) {
+          const v = { subjectId: p.subjectId, title: p.title, type: p.type, score: marks.score, outOf: marks.outOf, date: p.date, periodId: p.periodId, paperId: id };
+          if (scoreId && scores.some((s) => s.id === scoreId)) scores = scores.map((s) => (s.id === scoreId ? { ...s, ...v } : s));
+          else { scoreId = uid(); scores = [...scores, { ...v, id: scoreId }]; }
+        } else if (scoreId) {
+          scores = scores.filter((s) => s.id !== scoreId);
+          scoreId = null;
+        }
+        const next: ExamPaper = { ...p, id, scoreId };
+        return { ...d, scores, papers: prev ? d.papers.map((x) => (x.id === id ? next : x)) : [...d.papers, next] };
+      }),
+    deletePaper: (id: string) =>
+      update((d) => {
+        const p = d.papers.find((x) => x.id === id);
+        return { ...d, papers: d.papers.filter((x) => x.id !== id), scores: d.scores.filter((s) => s.id !== p?.scoreId) };
+      }),
+    setGradeGoals: (g: Partial<GradeGoals>) => update((d) => ({ ...d, gradeGoals: { ...d.gradeGoals, ...g } })),
     addTask: (t: Omit<Task, "id" | "createdAt" | "done">) =>
       update((d) => ({ ...d, tasks: [...d.tasks, { ...t, id: uid(), done: false, createdAt: Date.now() }] })),
     updateTask: (id: string, patch: Partial<Task>) =>
@@ -165,6 +232,8 @@ function useStoreValue() {
         tasks: d.tasks.filter((x) => !x.sample),
         sessions: d.sessions.filter((x) => !x.sample),
         scores: d.scores.filter((x) => !x.sample),
+        examPeriods: d.examPeriods.filter((x) => !x.sample),
+        papers: d.papers.filter((x) => !x.sample),
       })),
     bulkAdd: (draft: BulkDraftSubject[], opts: { priority: Priority; dueDate: string | null; status: TopicStatus }) => {
       let result = { subjects: 0, topics: 0 };
