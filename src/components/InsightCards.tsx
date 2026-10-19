@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Check, RotateCcw } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, RotateCcw } from "lucide-react";
+import { ExamBadge } from "@/components/ExamBadge";
 import { Button } from "@/components/ui/button";
 import { SubjectDot } from "@/components/ui-bits";
-import { dueRevisions, REVIEW_DAYS, weakSpots } from "@/lib/logic";
+import { daysUntil, dueRevisions, REVIEW_DAYS, weakSpots } from "@/lib/logic";
 import { useStudy } from "@/lib/store";
 
 export function WeakSpotsCard() {
@@ -76,6 +77,36 @@ export function RevisionCard() {
                     <Check /> Reviewed
                   </Button>
                 </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function NextExamsCard() {
+  const { papers, subjects } = useStudy();
+  const next = papers.filter((p) => !p.scoreId && daysUntil(p.date) >= 0).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
+  return (
+    <section className="card-surface p-5">
+      <h2 className="mb-3 flex items-center gap-2 font-semibold">
+        <CalendarClock className="size-4 text-primary" /> Upcoming exams
+      </h2>
+      {next.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No exams planned. <Link to="/scores" className="underline">Add one</Link>
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {next.map((p) => {
+            const s = subjects.find((x) => x.id === p.subjectId);
+            return (
+              <li key={p.id} className="flex items-center gap-2 text-sm">
+                {s && <SubjectDot color={s.color} />}
+                <span className="min-w-0 flex-1 truncate">{p.title}</span>
+                <ExamBadge date={p.date} />
               </li>
             );
           })}
