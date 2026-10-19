@@ -216,7 +216,15 @@ function useStoreValue() {
     addTask: (t: Omit<Task, "id" | "createdAt" | "done">) =>
       update((d) => ({ ...d, tasks: [...d.tasks, { ...t, id: uid(), done: false, createdAt: Date.now() }] })),
     updateTask: (id: string, patch: Partial<Task>) =>
-      update((d) => ({ ...d, tasks: d.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
+      update((d) => ({
+        ...d,
+        tasks: d.tasks.map((t) => {
+          if (t.id !== id) return t;
+          const next = { ...t, ...patch };
+          if (patch.done !== undefined && patch.done !== t.done && patch.completedAt === undefined) next.completedAt = patch.done ? Date.now() : null;
+          return next;
+        }),
+      })),
     deleteTask: (id: string) => update((d) => ({ ...d, tasks: d.tasks.filter((t) => t.id !== id) })),
     logSession: (s: Omit<FocusSession, "id">) =>
       update((d) => ({ ...d, sessions: [...d.sessions, { ...s, id: uid() }] })),

@@ -33,6 +33,7 @@ export interface Task {
   priority: Priority;
   dueDate: string | null;
   done: boolean;
+  completedAt?: number | null;
   createdAt: number;
   sample?: boolean;
 }
