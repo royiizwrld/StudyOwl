@@ -252,7 +252,7 @@ function PeriodCard({ period }: { period: ExamPeriod }) {
           <Compare actual={grade} target={period.target} />
         </div>
       </div>
-      {list.length > 0 && <ProgressBar value={list.length ? (marked / list.length) * 100 : 0} className="my-3" />}
+      {list.length > 0 && <div className="my-3"><ProgressBar value={(marked / list.length) * 100} /></div>}
       <div className="space-y-1">
         {list.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">No papers yet — add one for each subject.</p>}
         {list.map((p) => <PaperRow key={p.id} paper={p} />)}
