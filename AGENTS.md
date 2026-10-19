@@ -14,3 +14,4 @@
 - Pure planner rules (timer limits, streaks, bulk merge) live in `src/lib/logic.ts` with tests in `src/test/logic.test.ts` — keeps rules testable.
 - AI calls run only in server routes under `src/routes/api/` using `src/lib/ai/*.server.ts` — keeps the key off the browser.
 - Assistant quick actions are proposals only; the UI applies them after the user confirms — the AI never changes data itself.
+- Exam papers own their marks through a linked TestScore (scoreId) written only by the store's savePaper — Scores history and exam periods never disagree.

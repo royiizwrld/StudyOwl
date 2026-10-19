@@ -89,3 +89,27 @@ describe("weak spots", () => {
     expect(averagePct(scores)).toBe(58);
   });
 });
+
+import { countedScores, periodGrade } from "@/lib/logic";
+describe("exam period grades", () => {
+  const scores = [{ id: "a", score: 80, outOf: 100 }, { id: "b", score: 30, outOf: 50 }];
+  const papers = [
+    { periodId: "p", weight: 3, scoreId: "a" },
+    { periodId: "p", weight: 1, scoreId: "b" },
+    { periodId: "p", weight: 1, scoreId: null },
+  ];
+  it("equal average ignores unmarked papers", () => {
+    expect(periodGrade({ id: "p", method: "average", manualPct: null }, papers, scores)).toBe(70);
+  });
+  it("weighted uses paper weights", () => {
+    expect(periodGrade({ id: "p", method: "weighted", manualPct: null }, papers, scores)).toBe(75);
+  });
+  it("manual grade overrides", () => {
+    expect(periodGrade({ id: "p", method: "manual", manualPct: 78 }, papers, scores)).toBe(78);
+  });
+  it("excluded scores and excluded periods don't count", () => {
+    const s = [{ id: "1" }, { id: "2", includeInAverage: false }, { id: "3", periodId: "x" }, { id: "4", periodId: "y" }];
+    const r = countedScores(s, [{ id: "x", includeInOverall: false }, { id: "y", includeInOverall: true }]);
+    expect(r.map((x) => x.id)).toEqual(["1", "4"]);
+  });
+});
