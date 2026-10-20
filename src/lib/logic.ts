@@ -329,3 +329,30 @@ export function weakSpots(
   }
   return out.sort((a, b) => b.score - a.score).slice(0, limit);
 }
+
+// ---------- History reports ----------
+export type PeriodKind = "day" | "week" | "month" | "year";
+
+/** [start, end) millisecond range for the period containing `anchor`. Weeks start Monday. */
+export function periodRange(kind: PeriodKind, anchor: Date): { start: number; end: number } {
+  const a = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate());
+  let s: Date, e: Date;
+  if (kind === "day") { s = a; e = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 1); }
+  else if (kind === "week") { const off = (a.getDay() + 6) % 7; s = new Date(a.getFullYear(), a.getMonth(), a.getDate() - off); e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7); }
+  else if (kind === "month") { s = new Date(a.getFullYear(), a.getMonth(), 1); e = new Date(a.getFullYear(), a.getMonth() + 1, 1); }
+  else { s = new Date(a.getFullYear(), 0, 1); e = new Date(a.getFullYear() + 1, 0, 1); }
+  return { start: s.getTime(), end: e.getTime() };
+}
+
+/** Tasks due inside the range (by due date). */
+export function tasksDueIn<T extends { dueDate: string | null }>(tasks: T[], r: { start: number; end: number }): T[] {
+  return tasks.filter((t) => {
+    if (!t.dueDate) return false;
+    const ms = new Date(t.dueDate + "T12:00:00").getTime();
+    return ms >= r.start && ms < r.end;
+  });
+}
+
+export function sessionsIn(sessions: FocusSession[], r: { start: number; end: number }) {
+  return sessions.filter((s) => s.completed && s.startedAt >= r.start && s.startedAt < r.end);
+}
