@@ -396,11 +396,11 @@ function AnalyticsTab() {
           <ul className="space-y-1 text-sm">{wins.map((w) => <li key={w}>• {w}</li>)}</ul>
         </section>
       )}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="card-surface p-5">
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <section className="card-surface p-4 sm:p-5">
           <h2 className="mb-3 font-semibold">{showTargets ? "Average vs. target by subject" : "Average by subject"}</h2>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={bySubject}>
+            <BarChart data={bySubject} margin={{ left: -16, right: 4, top: 8 }}>
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
               <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} unit="%" />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} formatter={(v, n) => [`${v}%`, n === "target" ? "Target" : "Average"]} />
@@ -414,7 +414,7 @@ function AnalyticsTab() {
         <section className="card-surface p-5">
           <h2 className="mb-3 font-semibold">Progress over time</h2>
           <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={trend}>
+            <LineChart data={trend} margin={{ left: -16, right: 8, top: 8 }}>
               <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
               <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
               <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} unit="%" />
@@ -426,7 +426,7 @@ function AnalyticsTab() {
       </div>
       <section className="card-surface p-5">
         <h2 className="mb-3 font-semibold">Average by test type</h2>
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {byType.map((t) => (
             <div key={t.name} className="rounded-lg bg-muted p-3">
               <p className="text-xs text-muted-foreground">{t.name} · {t.n}</p>
@@ -491,11 +491,11 @@ function ScoresPage() {
     <div>
       <PageHeader title="Scores & exams" subtitle="Plan exams, log results and watch your progress." />
       <Tabs defaultValue="overview">
-        <TabsList className="mb-4 flex-wrap">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="exams">Exams</TabsTrigger>
-          <TabsTrigger value="tests">Tests & CATs</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsList className="mb-4 grid h-auto w-full grid-cols-4 sm:inline-flex sm:w-auto">
+          <TabsTrigger value="overview" className="px-1 text-xs sm:px-3 sm:text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="exams" className="px-1 text-xs sm:px-3 sm:text-sm">Exams</TabsTrigger>
+          <TabsTrigger value="tests" className="px-1 text-xs sm:px-3 sm:text-sm">Tests</TabsTrigger>
+          <TabsTrigger value="analytics" className="px-1 text-xs sm:px-3 sm:text-sm">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><OverviewTab /></TabsContent>
         <TabsContent value="exams"><ExamsTab /></TabsContent>

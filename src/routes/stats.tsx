@@ -3,6 +3,7 @@ import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Toolti
 import { EmptyState, PageHeader } from "@/components/ui-bits";
 import { minutesBySubject, minutesInRange, subjectProgress, todayStart, weekStart } from "@/lib/logic";
 import { useStudy } from "@/lib/store";
+import { HistoryReport } from "@/components/HistoryReport";
 
 export const Route = createFileRoute("/stats")({
   head: () => ({
@@ -43,7 +44,7 @@ function StatsPage() {
   return (
     <div>
       <PageHeader title="Statistics" subtitle="Where your focus time goes." />
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Today" value={`${minutesInRange(sessions, todayStart())} min`} />
         <Stat label="This week" value={`${minutesInRange(sessions, weekStart())} min`} />
         <Stat label="All time" value={`${Math.round((total / 60) * 10) / 10} h`} />
@@ -55,7 +56,7 @@ function StatsPage() {
           {donut.length === 0 ? (
             <EmptyState title="No focus time yet" body="Finish a Pomodoro session to see it here." />
           ) : (
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer>
                 <PieChart>
                   <Pie data={donut} dataKey="value" nameKey="name" innerRadius="55%" outerRadius="85%" paddingAngle={2} stroke="none">
@@ -75,7 +76,7 @@ function StatsPage() {
           {progress.length === 0 ? (
             <EmptyState title="No subjects yet" />
           ) : (
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer>
                 <BarChart data={progress} layout="vertical" margin={{ left: 10 }}>
                   <XAxis type="number" allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} />
@@ -90,6 +91,7 @@ function StatsPage() {
           )}
         </section>
       </div>
+      <HistoryReport />
     </div>
   );
 }

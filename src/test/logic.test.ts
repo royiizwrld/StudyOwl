@@ -113,3 +113,22 @@ describe("exam period grades", () => {
     expect(r.map((x) => x.id)).toEqual(["1", "4"]);
   });
 });
+
+import { periodRange, tasksDueIn } from "@/lib/logic";
+describe("history periods", () => {
+  it("week starts Monday and lasts 7 days", () => {
+    const r = periodRange("week", new Date(2026, 9, 16)); // Fri
+    expect(new Date(r.start).getDay()).toBe(1);
+    expect(new Date(r.start).getDate()).toBe(12);
+    expect(new Date(r.end).getDate()).toBe(19);
+  });
+  it("month and year bounds", () => {
+    expect(new Date(periodRange("month", new Date(2026, 1, 10)).end).getMonth()).toBe(2);
+    expect(new Date(periodRange("year", new Date(2026, 5, 1)).start).getMonth()).toBe(0);
+  });
+  it("tasks due filtered to the chosen day", () => {
+    const r = periodRange("day", new Date(2026, 9, 16));
+    const ts = [{ dueDate: "2026-10-16" }, { dueDate: "2026-10-17" }, { dueDate: null }];
+    expect(tasksDueIn(ts, r)).toHaveLength(1);
+  });
+});
