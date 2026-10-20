@@ -32,7 +32,7 @@ function Mini({ label, value }: { label: string; value: string }) {
 }
 
 export function HistoryReport() {
-  const { sessions, tasks, subjects, topics, scores, dailyGoal, updateTask, gradeGoals } = useStudy();
+  const { sessions, tasks, subjects, topics, scores, dailyGoal, updateTask } = useStudy();
   const [kind, setKind] = useState<PeriodKind>("day");
   const [anchor, setAnchor] = useState(() => new Date());
   const r = periodRange(kind, anchor);
@@ -180,14 +180,14 @@ export function HistoryReport() {
                       {sub && <SubjectDot color={sub.color} />}{sub?.name ?? "No subject"}{kind !== "day" && t.dueDate && ` · ${format(new Date(t.dueDate + "T12:00:00"), "MMM d")}`}
                     </p>
                   </div>
-                  <span className="shrink-0"><PriorityBadge priority={t.priority} /></span>
+                  <span className="shrink-0"><PriorityBadge p={t.priority} /></span>
                 </li>
               );
             })}
           </ul>
         )}
       </div>
-      {report.sc.length > 0 && !gradeGoals.maskTarget && (
+      {report.sc.length > 0 && (
         <div className="mt-4">
           <h3 className="mb-2 text-sm font-semibold">Results</h3>
           <ul className="space-y-1 text-sm">
