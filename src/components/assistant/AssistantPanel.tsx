@@ -231,7 +231,7 @@ export function AssistantLauncher() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open study assistant"
-        className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-primary py-2 pl-2 pr-4 font-display text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:scale-105 md:bottom-6 md:right-6"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-3 z-40 flex items-center gap-2 rounded-full bg-primary py-2 pl-2 pr-4 font-display text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:scale-105 md:bottom-6 md:right-6"
       >
         <span className="flex size-9 items-center justify-center rounded-full bg-card">
           <img src={owl} alt="" width={28} height={28} className="size-7" />
