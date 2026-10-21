@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Menu, Moon, PanelLeftClose, PanelLeftOpen, Star, Sun, Timer } from "lucide-react";
+import { BarChart3, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Star, Timer } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTimer } from "@/lib/timer";
 import { AssistantLauncher } from "@/components/assistant/AssistantPanel";
+import { SettingsDialog } from "@/components/SettingsDialog";
 import owl from "@/assets/owl.png";
 
 const NAV = [
@@ -18,27 +19,6 @@ const NAV = [
   { to: "/stats", label: "Stats", icon: BarChart3 },
 ] as const;
 const MOBILE_MAIN = ["/", "/subjects", "/focus", "/scores"];
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const saved = localStorage.getItem("study-planner:theme");
-    const isDark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("study-planner:theme", next ? "dark" : "light");
-  };
-  return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle dark mode">
-      {dark ? <Sun /> : <Moon />}
-    </Button>
-  );
-}
 
 function TimerChip() {
   const t = useTimer();
@@ -106,7 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="hidden md:block" />
           <div className="flex items-center gap-2">
             <TimerChip />
-            <ThemeToggle />
+            <SettingsDialog />
           </div>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-5 md:px-8 md:pb-12 md:pt-6">{children}</main>
