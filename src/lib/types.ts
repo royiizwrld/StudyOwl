@@ -70,6 +70,20 @@ export interface StudyData {
   examPeriods: ExamPeriod[];
   papers: ExamPaper[];
   gradeGoals: GradeGoals;
+  objectives: Objective[];
+}
+
+/** A weekly learning objective; weekStart is the Monday (yyyy-MM-dd) of its week. */
+export interface Objective {
+  id: string;
+  weekStart: string;
+  weekTitle?: string | undefined;
+  title: string;
+  subjectId: string | null;
+  done: boolean;
+  completedAt?: number | null;
+  createdAt: number;
+  sample?: boolean;
 }
 
 export type GradeMethod = "average" | "weighted" | "manual";

@@ -356,3 +356,31 @@ export function tasksDueIn<T extends { dueDate: string | null }>(tasks: T[], r: 
 export function sessionsIn(sessions: FocusSession[], r: { start: number; end: number }) {
   return sessions.filter((s) => s.completed && s.startedAt >= r.start && s.startedAt < r.end);
 }
+
+
+/** Monday (yyyy-MM-dd) of the week containing `d`. */
+export function weekKey(d: Date | number) {
+  return format(startOfWeek(d, { weekStartsOn: 1 }), "yyyy-MM-dd");
+}
+
+/** Map AI/paste weeks onto consecutive calendar weeks starting at the week containing `firstWeek`. */
+export function assignWeeks(firstWeek: string, count: number) {
+  const base = startOfWeek(new Date(firstWeek + "T12:00:00"), { weekStartsOn: 1 });
+  return Array.from({ length: count }, (_, i) => format(new Date(base.getTime() + i * 7 * 86400000 + 3600000 * 12), "yyyy-MM-dd"));
+}
+
+/** Parse "Week 1: Title" headers followed by objective lines. Lines before any header go into week 1. */
+export function parseObjectiveText(text: string) {
+  const weeks: { title: string; objectives: string[] }[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const h = line.match(/^(?:#+\s*)?week\s*\d+\s*[:\-–—.]?\s*(.*)$/i);
+    if (h) { weeks.push({ title: line.replace(/^#+\s*/, ""), objectives: [] }); continue; }
+    const item = line.replace(/^([-*•]|\d+[.)]|[a-z][.)])\s*/i, "").trim();
+    if (!item) continue;
+    if (!weeks.length) weeks.push({ title: "Week 1", objectives: [] });
+    weeks[weeks.length - 1]!.objectives.push(item);
+  }
+  return weeks.filter((w) => w.objectives.length);
+}

@@ -1,12 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { addDays, format } from "date-fns";
-import { clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, withStatus, type BulkDraftSubject } from "./logic";
+import { weekKey, clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, withStatus, type BulkDraftSubject } from "./logic";
 import {
   colorAt,
   type ExamPaper,
   type ExamPeriod,
   type FocusSession,
   type GradeGoals,
+  type Objective,
   type Priority,
   type StudyData,
   type Subject,
@@ -35,6 +36,7 @@ const EMPTY: StudyData = {
   examPeriods: [],
   papers: [],
   gradeGoals: DEFAULT_GRADE_GOALS,
+  objectives: [],
 };
 
 function seed(): StudyData {
@@ -68,6 +70,9 @@ function seed(): StudyData {
       { id: uid(), periodId: pid, subjectId: sid, title: "Biology Paper 1", type: "major_exam", date: d(18), target: 75, weight: 1, scoreId: null, sample: true },
       { id: uid(), periodId: pid, subjectId: sid, title: "Biology Paper 2 (practical)", type: "major_exam", date: d(21), target: 70, weight: 1, scoreId: null, sample: true },
     ],
+    objectives: ["Describe the structure of prokaryotic vs eukaryotic cells", "Explain the light-dependent reactions", "Outline the stages of cellular respiration"].map((title, i) => ({
+      id: uid(), weekStart: weekKey(new Date()), weekTitle: "Week 1: Cell biology (sample)", title, subjectId: sid, done: i === 0, completedAt: i === 0 ? now : null, createdAt: now, sample: true,
+    })),
     scores: [
       { id: uid(), subjectId: sid, title: "Cells quiz", type: "quiz", score: 14, outOf: 20, date: d(-9), sample: true },
       { id: uid(), subjectId: sid, title: "Term 1 CAT", type: "cat", score: 52, outOf: 100, date: d(-4), sample: true },
@@ -91,6 +96,7 @@ function load(): StudyData {
       examPeriods: p.examPeriods ?? [],
       papers: p.papers ?? [],
       gradeGoals: { ...DEFAULT_GRADE_GOALS, ...(p.gradeGoals ?? {}) },
+      objectives: p.objectives ?? [],
     };
   } catch {
     return seed();
@@ -225,6 +231,26 @@ function useStoreValue() {
           return next;
         }),
       })),
+    addObjectives: (items: Omit<Objective, "id" | "createdAt" | "done" | "completedAt">[]) =>
+      update((d) => {
+        const seen = new Set(d.objectives.map((o) => o.weekStart + "|" + o.title.trim().toLowerCase()));
+        const fresh: Objective[] = [];
+        for (const it of items) {
+          const k = it.weekStart + "|" + it.title.trim().toLowerCase();
+          if (!it.title.trim() || seen.has(k)) continue;
+          seen.add(k);
+          fresh.push({ ...it, title: it.title.trim(), id: uid(), createdAt: Date.now(), done: false, completedAt: null });
+        }
+        return { ...d, objectives: [...d.objectives, ...fresh] };
+      }),
+    /** Tick/untick; `at` lets the user credit a past day. */
+    setObjectiveDone: (id: string, done: boolean, at?: number) =>
+      update((d) => ({ ...d, objectives: d.objectives.map((o) => (o.id === id ? { ...o, done, completedAt: done ? (at ?? Date.now()) : null } : o)) })),
+    updateObjective: (id: string, patch: Partial<Objective>) =>
+      update((d) => ({ ...d, objectives: d.objectives.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
+    deleteObjective: (id: string) => update((d) => ({ ...d, objectives: d.objectives.filter((o) => o.id !== id) })),
+    renameWeek: (weekStart: string, title: string) =>
+      update((d) => ({ ...d, objectives: d.objectives.map((o) => (o.weekStart === weekStart ? { ...o, weekTitle: title } : o)) })),
     deleteTask: (id: string) => update((d) => ({ ...d, tasks: d.tasks.filter((t) => t.id !== id) })),
     logSession: (s: Omit<FocusSession, "id">) =>
       update((d) => ({ ...d, sessions: [...d.sessions, { ...s, id: uid() }] })),
@@ -242,6 +268,7 @@ function useStoreValue() {
         scores: d.scores.filter((x) => !x.sample),
         examPeriods: d.examPeriods.filter((x) => !x.sample),
         papers: d.papers.filter((x) => !x.sample),
+        objectives: d.objectives.filter((x) => !x.sample),
       })),
     bulkAdd: (draft: BulkDraftSubject[], opts: { priority: Priority; dueDate: string | null; status: TopicStatus }) => {
       let result = { subjects: 0, topics: 0 };
