@@ -11,7 +11,7 @@ import owl from "@/assets/owl.png";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/subjects", label: "Subjects", icon: BookOpen },
-  { to: "/tasks", label: "Tasks", icon: CheckSquare },
+  { to: "/tasks", label: "Tasks & Objectives", icon: CheckSquare },
   { to: "/review", label: "Review", icon: Star },
   { to: "/scores", label: "Scores", icon: GraduationCap },
   { to: "/focus", label: "Focus", icon: Timer },
