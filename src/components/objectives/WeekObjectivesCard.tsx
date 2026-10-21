@@ -32,7 +32,7 @@ export function WeekObjectivesCard({ date }: { date: Date }) {
         <Button variant="ghost" size="icon-sm" aria-label="Previous week" onClick={() => shift(-1)}><ChevronLeft /></Button>
         <Button variant="ghost" size="icon-sm" aria-label="Next week" onClick={() => shift(1)}><ChevronRight /></Button>
       </div>
-      {list.length > 0 && <div className="mx-1 mb-2"><ProgressBar value={done / list.length} /></div>}
+      {list.length > 0 && <div className="mx-1 mb-2"><ProgressBar value={(done / list.length) * 100} /></div>}
       {list.length ? (
         list.map((o) => <ObjectiveRow key={o.id} o={o} creditAt={creditAt} editable={false} />)
       ) : (
