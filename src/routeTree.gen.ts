@@ -17,6 +17,7 @@ import { Route as StatsRouteImport } from './routes/stats'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as ApiBulkParseRouteImport } from './routes/api/bulk-parse'
+import { Route as ApiObjectivesParseRouteImport } from './routes/api/objectives-parse'
 import { Route as SubjectsIndexRouteImport } from './routes/subjects.index'
 import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
 
@@ -60,6 +61,11 @@ const ApiBulkParseRoute = ApiBulkParseRouteImport.update({
   path: '/api/bulk-parse',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiObjectivesParseRoute = ApiObjectivesParseRouteImport.update({
+  id: '/api/objectives-parse',
+  path: '/api/objectives-parse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubjectsIndexRoute = SubjectsIndexRouteImport.update({
   id: '/subjects/',
   path: '/subjects/',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/api/objectives-parse': typeof ApiObjectivesParseRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/subjects/': typeof SubjectsIndexRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/api/objectives-parse': typeof ApiObjectivesParseRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/subjects': typeof SubjectsIndexRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/tasks': typeof TasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
+  '/api/objectives-parse': typeof ApiObjectivesParseRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/subjects/': typeof SubjectsIndexRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/api/assistant'
     | '/api/bulk-parse'
+    | '/api/objectives-parse'
     | '/subjects/$subjectId'
     | '/subjects/'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/api/assistant'
     | '/api/bulk-parse'
+    | '/api/objectives-parse'
     | '/subjects/$subjectId'
     | '/subjects'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/api/assistant'
     | '/api/bulk-parse'
+    | '/api/objectives-parse'
     | '/subjects/$subjectId'
     | '/subjects/'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   TasksRoute: typeof TasksRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiBulkParseRoute: typeof ApiBulkParseRoute
+  ApiObjectivesParseRoute: typeof ApiObjectivesParseRoute
   SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
   SubjectsIndexRoute: typeof SubjectsIndexRoute
 }
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBulkParseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/objectives-parse': {
+      id: '/api/objectives-parse'
+      path: '/api/objectives-parse'
+      fullPath: '/api/objectives-parse'
+      preLoaderRoute: typeof ApiObjectivesParseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subjects/': {
       id: '/subjects/'
       path: '/subjects'
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   TasksRoute: TasksRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiBulkParseRoute: ApiBulkParseRoute,
+  ApiObjectivesParseRoute: ApiObjectivesParseRoute,
   SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
   SubjectsIndexRoute: SubjectsIndexRoute,
 }
