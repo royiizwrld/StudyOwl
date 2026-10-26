@@ -49,8 +49,8 @@ export function ObjectivesDialog({ trigger, defaultWeek }: { trigger: ReactNode;
       const payload: Record<string, unknown> = { text: text.trim() || undefined, existingSubjects: subjects.map((s) => s.name) };
       if (file) {
         if (file.size > 10_000_000) throw new Error("That file is over 10 MB. Try a smaller one.");
-        if (file.type.startsWith("text/") || /\.(txt|md|csv)$/i.test(file.name)) payload.text = `${text}\n${await file.text()}`;
-        else payload.file = { dataUrl: await readAsDataUrl(file), mediaType: file.type || "application/pdf", name: file.name };
+        if (file.type.startsWith("text/") || /\.(txt|md|csv)$/i.test(file.name)) payload["text"] = `${text}\n${await file.text()}`;
+        else payload["file"] = { dataUrl: await readAsDataUrl(file), mediaType: file.type || "application/pdf", name: file.name };
       }
       const res = await fetch("/api/objectives-parse", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
       const body = (await res.json().catch(() => ({}))) as { weeks?: { title: string; subject: string | null; objectives: string[] }[]; error?: string };
