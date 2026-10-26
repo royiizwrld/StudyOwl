@@ -1,4 +1,4 @@
-# Study Buddy Pro
+# StudyOwl
 
 Build a responsive Student Study Planner web app with a clean, calm, modern design (card layout, light/dark mode, mobile-friendly).
 
