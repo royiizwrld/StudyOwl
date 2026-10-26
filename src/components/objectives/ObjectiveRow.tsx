@@ -9,7 +9,7 @@ import { useStudy } from "@/lib/store";
 import type { Objective } from "@/lib/types";
 
 /** `creditAt` = timestamp to stamp when ticking (used when viewing a past day). */
-export function ObjectiveRow({ o, creditAt, editable = true }: { o: Objective; creditAt?: number; editable?: boolean }) {
+export function ObjectiveRow({ o, creditAt, editable = true }: { o: Objective; creditAt?: number | undefined; editable?: boolean }) {
   const { subjects, setObjectiveDone, updateObjective, deleteObjective } = useStudy();
   const subject = subjects.find((s) => s.id === o.subjectId);
   const [editing, setEditing] = useState(false);
