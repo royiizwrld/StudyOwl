@@ -14,7 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      exam_papers: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exam_periods: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      focus_sessions: {
+        Row: {
+          data: Json
+          id: string
+          minutes: number | null
+          subject_id: string | null
+          topic_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          minutes?: number | null
+          subject_id?: string | null
+          topic_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          minutes?: number | null
+          subject_id?: string | null
+          topic_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      objectives: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          color_theme: string
+          created_at: string
+          daily_goal: number
+          first_name: string
+          grade_goals: Json | null
+          id: string
+          last_name: string | null
+          pomodoro_settings: Json | null
+          terms_accepted_at: string | null
+          terms_version: string | null
+          theme_preference: string
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          color_theme?: string
+          created_at?: string
+          daily_goal?: number
+          first_name?: string
+          grade_goals?: Json | null
+          id: string
+          last_name?: string | null
+          pomodoro_settings?: Json | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          theme_preference?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color_theme?: string
+          created_at?: string
+          daily_goal?: number
+          first_name?: string
+          grade_goals?: Json | null
+          id?: string
+          last_name?: string | null
+          pomodoro_settings?: Json | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          theme_preference?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      test_scores: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      topics: {
+        Row: {
+          data: Json
+          id: string
+          needs_review: boolean | null
+          status: string | null
+          subject_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id: string
+          needs_review?: boolean | null
+          status?: string | null
+          subject_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          needs_review?: boolean | null
+          status?: string | null
+          subject_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
