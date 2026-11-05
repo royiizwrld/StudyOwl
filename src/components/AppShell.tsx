@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Star, Timer } from "lucide-react";
+import { BarChart3, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Settings, Star, Timer } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,17 +8,20 @@ import { useTimer } from "@/lib/timer";
 import { AssistantLauncher } from "@/components/assistant/AssistantPanel";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import owl from "@/assets/owl.png";
+import { useAuth } from "@/lib/auth";
+import { SyncStatus } from "@/components/account/SyncStatus";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/subjects", label: "Subjects", icon: BookOpen },
   { to: "/tasks", label: "Tasks & Objectives", icon: CheckSquare },
   { to: "/review", label: "Review", icon: Star },
   { to: "/scores", label: "Scores", icon: GraduationCap },
   { to: "/focus", label: "Focus", icon: Timer },
   { to: "/stats", label: "Stats", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
-const MOBILE_MAIN = ["/", "/subjects", "/focus", "/scores"];
+const MOBILE_MAIN = ["/dashboard", "/subjects", "/focus", "/scores"];
 
 function TimerChip() {
   const t = useTimer();
@@ -32,9 +35,15 @@ function TimerChip() {
   );
 }
 
+function Greeting() {
+  const { profile } = useAuth();
+  const name = profile?.first_name;
+  return <p className="hidden text-sm text-muted-foreground md:block">{name ? <>Hi, <span className="font-semibold text-foreground">{name}</span></> : null}</p>;
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const isActive = (to: string) => (to === "/" ? path === "/" : path.startsWith(to));
+  const isActive = (to: string) => path.startsWith(to);
   const [collapsed, setCollapsed] = useState(false);
   const [more, setMore] = useState(false);
   useEffect(() => setCollapsed(localStorage.getItem("study-planner:sidebar") === "collapsed"), []);
@@ -51,7 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen md:flex">
       <aside className={cn("sticky top-0 hidden h-screen shrink-0 flex-col border-r bg-sidebar p-3 transition-[width] duration-200 md:flex", collapsed ? "w-16" : "w-60")}>
         <div className={cn("mb-6 flex items-center", collapsed ? "flex-col gap-2" : "justify-between")}>
-          <Link to="/" className="flex items-center gap-2 px-1" title="Studyowl">
+          <Link to="/dashboard" className="flex items-center gap-2 px-1" title="Studyowl">
             <img src={owl} alt="" width={36} height={36} className="size-9 shrink-0" />
             {!collapsed && <span className="font-display text-lg font-semibold">Studyowl</span>}
           </Link>
@@ -79,17 +88,25 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b bg-background/85 px-4 py-2 backdrop-blur md:px-8">
-          <Link to="/" className="flex items-center gap-2 md:hidden">
+          <Link to="/dashboard" className="flex items-center gap-2 md:hidden">
             <img src={owl} alt="" width={28} height={28} className="size-7" />
             <span className="font-display font-semibold">Studyowl</span>
           </Link>
-          <div className="hidden md:block" />
+          <Greeting />
           <div className="flex items-center gap-2">
+            <SyncStatus />
             <TimerChip />
             <SettingsDialog />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-5 md:px-8 md:pb-12 md:pt-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-5 md:px-8 md:pb-12 md:pt-6">{children}
+          <footer className="mt-12 flex flex-wrap items-center gap-x-4 gap-y-1 border-t pt-4 text-xs text-muted-foreground">
+            <span>© {new Date().getFullYear()} Studyowl</span>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/settings" className="hover:text-foreground">Settings</Link>
+          </footer>
+        </main>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {NAV.filter((n) => MOBILE_MAIN.includes(n.to)).map(({ to, label, icon: Icon }) => (

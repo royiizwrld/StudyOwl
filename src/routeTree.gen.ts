@@ -9,45 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as FocusRouteImport } from './routes/focus'
-import { Route as ReviewRouteImport } from './routes/review'
-import { Route as ScoresRouteImport } from './routes/scores'
-import { Route as StatsRouteImport } from './routes/stats'
-import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFocusRouteImport } from './routes/_authenticated/focus'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as AuthenticatedScoresRouteImport } from './routes/_authenticated/scores'
+import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
+import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as ApiBulkParseRouteImport } from './routes/api/bulk-parse'
 import { Route as ApiObjectivesParseRouteImport } from './routes/api/objectives-parse'
-import { Route as SubjectsIndexRouteImport } from './routes/subjects.index'
-import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
+import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects.index'
+import { Route as AuthenticatedSubjectsSubjectIdRouteImport } from './routes/_authenticated/subjects.$subjectId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/_authenticated/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FocusRoute = FocusRouteImport.update({
-  id: '/focus',
+const AuthenticatedFocusRoute = AuthenticatedFocusRouteImport.update({
+  id: '/_authenticated/focus',
   path: '/focus',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReviewRoute = ReviewRouteImport.update({
-  id: '/review',
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/_authenticated/review',
   path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ScoresRoute = ScoresRouteImport.update({
-  id: '/scores',
+const AuthenticatedScoresRoute = AuthenticatedScoresRouteImport.update({
+  id: '/_authenticated/scores',
   path: '/scores',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StatsRoute = StatsRouteImport.update({
-  id: '/stats',
+const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
+  id: '/_authenticated/stats',
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TasksRoute = TasksRouteImport.update({
-  id: '/tasks',
+const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
+  id: '/_authenticated/tasks',
   path: '/tasks',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -66,61 +66,63 @@ const ApiObjectivesParseRoute = ApiObjectivesParseRouteImport.update({
   path: '/api/objectives-parse',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SubjectsIndexRoute = SubjectsIndexRouteImport.update({
-  id: '/subjects/',
-  path: '/subjects/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
-  id: '/subjects/$subjectId',
-  path: '/subjects/$subjectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedSubjectsIndexRoute =
+  AuthenticatedSubjectsIndexRouteImport.update({
+    id: '/_authenticated/subjects/',
+    path: '/subjects/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedSubjectsSubjectIdRoute =
+  AuthenticatedSubjectsSubjectIdRouteImport.update({
+    id: '/_authenticated/subjects/$subjectId',
+    path: '/subjects/$subjectId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/focus': typeof FocusRoute
-  '/review': typeof ReviewRoute
-  '/scores': typeof ScoresRoute
-  '/stats': typeof StatsRoute
-  '/tasks': typeof TasksRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/focus': typeof AuthenticatedFocusRoute
+  '/review': typeof AuthenticatedReviewRoute
+  '/scores': typeof AuthenticatedScoresRoute
+  '/stats': typeof AuthenticatedStatsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
   '/api/objectives-parse': typeof ApiObjectivesParseRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/subjects/': typeof SubjectsIndexRoute
+  '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
+  '/subjects/': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/focus': typeof FocusRoute
-  '/review': typeof ReviewRoute
-  '/scores': typeof ScoresRoute
-  '/stats': typeof StatsRoute
-  '/tasks': typeof TasksRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/focus': typeof AuthenticatedFocusRoute
+  '/review': typeof AuthenticatedReviewRoute
+  '/scores': typeof AuthenticatedScoresRoute
+  '/stats': typeof AuthenticatedStatsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
   '/api/objectives-parse': typeof ApiObjectivesParseRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/subjects': typeof SubjectsIndexRoute
+  '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
+  '/subjects': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/focus': typeof FocusRoute
-  '/review': typeof ReviewRoute
-  '/scores': typeof ScoresRoute
-  '/stats': typeof StatsRoute
-  '/tasks': typeof TasksRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/focus': typeof AuthenticatedFocusRoute
+  '/_authenticated/review': typeof AuthenticatedReviewRoute
+  '/_authenticated/scores': typeof AuthenticatedScoresRoute
+  '/_authenticated/stats': typeof AuthenticatedStatsRoute
+  '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/bulk-parse': typeof ApiBulkParseRoute
   '/api/objectives-parse': typeof ApiObjectivesParseRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/subjects/': typeof SubjectsIndexRoute
+  '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
+  '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
+    | '/dashboard'
     | '/focus'
     | '/review'
     | '/scores'
@@ -133,7 +135,7 @@ export interface FileRouteTypes {
     | '/subjects/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/dashboard'
     | '/focus'
     | '/review'
     | '/scores'
@@ -146,75 +148,75 @@ export interface FileRouteTypes {
     | '/subjects'
   id:
     | '__root__'
-    | '/'
-    | '/focus'
-    | '/review'
-    | '/scores'
-    | '/stats'
-    | '/tasks'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/focus'
+    | '/_authenticated/review'
+    | '/_authenticated/scores'
+    | '/_authenticated/stats'
+    | '/_authenticated/tasks'
     | '/api/assistant'
     | '/api/bulk-parse'
     | '/api/objectives-parse'
-    | '/subjects/$subjectId'
-    | '/subjects/'
+    | '/_authenticated/subjects/$subjectId'
+    | '/_authenticated/subjects/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  FocusRoute: typeof FocusRoute
-  ReviewRoute: typeof ReviewRoute
-  ScoresRoute: typeof ScoresRoute
-  StatsRoute: typeof StatsRoute
-  TasksRoute: typeof TasksRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFocusRoute: typeof AuthenticatedFocusRoute
+  AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedScoresRoute: typeof AuthenticatedScoresRoute
+  AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
+  AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiBulkParseRoute: typeof ApiBulkParseRoute
   ApiObjectivesParseRoute: typeof ApiObjectivesParseRoute
-  SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
-  SubjectsIndexRoute: typeof SubjectsIndexRoute
+  AuthenticatedSubjectsSubjectIdRoute: typeof AuthenticatedSubjectsSubjectIdRoute
+  AuthenticatedSubjectsIndexRoute: typeof AuthenticatedSubjectsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/focus': {
-      id: '/focus'
+    '/_authenticated/focus': {
+      id: '/_authenticated/focus'
       path: '/focus'
       fullPath: '/focus'
-      preLoaderRoute: typeof FocusRouteImport
+      preLoaderRoute: typeof AuthenticatedFocusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/review': {
-      id: '/review'
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
       path: '/review'
       fullPath: '/review'
-      preLoaderRoute: typeof ReviewRouteImport
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scores': {
-      id: '/scores'
+    '/_authenticated/scores': {
+      id: '/_authenticated/scores'
       path: '/scores'
       fullPath: '/scores'
-      preLoaderRoute: typeof ScoresRouteImport
+      preLoaderRoute: typeof AuthenticatedScoresRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/stats': {
-      id: '/stats'
+    '/_authenticated/stats': {
+      id: '/_authenticated/stats'
       path: '/stats'
       fullPath: '/stats'
-      preLoaderRoute: typeof StatsRouteImport
+      preLoaderRoute: typeof AuthenticatedStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tasks': {
-      id: '/tasks'
+    '/_authenticated/tasks': {
+      id: '/_authenticated/tasks'
       path: '/tasks'
       fullPath: '/tasks'
-      preLoaderRoute: typeof TasksRouteImport
+      preLoaderRoute: typeof AuthenticatedTasksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/assistant': {
@@ -238,35 +240,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiObjectivesParseRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/subjects/': {
-      id: '/subjects/'
+    '/_authenticated/subjects/': {
+      id: '/_authenticated/subjects/'
       path: '/subjects'
       fullPath: '/subjects/'
-      preLoaderRoute: typeof SubjectsIndexRouteImport
+      preLoaderRoute: typeof AuthenticatedSubjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/subjects/$subjectId': {
-      id: '/subjects/$subjectId'
+    '/_authenticated/subjects/$subjectId': {
+      id: '/_authenticated/subjects/$subjectId'
       path: '/subjects/$subjectId'
       fullPath: '/subjects/$subjectId'
-      preLoaderRoute: typeof SubjectsSubjectIdRouteImport
+      preLoaderRoute: typeof AuthenticatedSubjectsSubjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  FocusRoute: FocusRoute,
-  ReviewRoute: ReviewRoute,
-  ScoresRoute: ScoresRoute,
-  StatsRoute: StatsRoute,
-  TasksRoute: TasksRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFocusRoute: AuthenticatedFocusRoute,
+  AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedScoresRoute: AuthenticatedScoresRoute,
+  AuthenticatedStatsRoute: AuthenticatedStatsRoute,
+  AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiBulkParseRoute: ApiBulkParseRoute,
   ApiObjectivesParseRoute: ApiObjectivesParseRoute,
-  SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
-  SubjectsIndexRoute: SubjectsIndexRoute,
+  AuthenticatedSubjectsSubjectIdRoute: AuthenticatedSubjectsSubjectIdRoute,
+  AuthenticatedSubjectsIndexRoute: AuthenticatedSubjectsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
