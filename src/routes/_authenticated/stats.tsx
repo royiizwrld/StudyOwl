@@ -5,7 +5,7 @@ import { minutesBySubject, minutesInRange, subjectProgress, todayStart, weekStar
 import { useStudy } from "@/lib/store";
 import { HistoryReport } from "@/components/HistoryReport";
 
-export const Route = createFileRoute("/stats")({
+export const Route = createFileRoute("/_authenticated/stats")({
   head: () => ({
     meta: [
       { title: "Statistics — Studyowl" },

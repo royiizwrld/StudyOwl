@@ -7,7 +7,7 @@ import { SubjectDialog } from "@/components/SubjectDialog";
 import { EmptyState, PageHeader } from "@/components/ui-bits";
 import { useStudy } from "@/lib/store";
 
-export const Route = createFileRoute("/subjects/")({
+export const Route = createFileRoute("/_authenticated/subjects/")({
   head: () => ({
     meta: [
       { title: "Subjects — Studyowl" },

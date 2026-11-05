@@ -1,5 +1,4 @@
 import { Check, Monitor, Moon, Settings, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useStudy } from "@/lib/store";
 
-type Mode = "light" | "dark" | "system";
+import { useTheme } from "@/lib/theme";
+
 export const THEMES = [
   { id: "sage", name: "Warm Paper & Sage", swatch: ["oklch(0.975 0.008 85)", "oklch(0.52 0.07 150)"] },
   { id: "obsidian", name: "Midnight Obsidian", swatch: ["oklch(0.2 0.02 265)", "oklch(0.6 0.12 265)"] },
@@ -22,34 +22,9 @@ export const THEMES = [
   { id: "mono", name: "Minimal Monochrome", swatch: ["oklch(0.98 0 0)", "oklch(0.3 0 0)"] },
 ] as const;
 
-const MODE_KEY = "study-planner:theme";
-const THEME_KEY = "study-planner:palette";
-
-function apply(mode: Mode, theme: string) {
-  const dark = mode === "dark" || (mode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  const el = document.documentElement;
-  el.classList.toggle("dark", dark);
-  if (theme === "sage") el.removeAttribute("data-theme");
-  else el.setAttribute("data-theme", theme);
-}
-
 export function SettingsDialog() {
   const { settings, setSettings, dailyGoal, setDailyGoal, gradeGoals, setGradeGoals } = useStudy();
-  const [mode, setMode] = useState<Mode>("system");
-  const [theme, setTheme] = useState("sage");
-  useEffect(() => {
-    const m = (localStorage.getItem(MODE_KEY) as Mode | null) ?? "system";
-    const t = localStorage.getItem(THEME_KEY) ?? "sage";
-    setMode(m);
-    setTheme(t);
-    apply(m, t);
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => apply((localStorage.getItem(MODE_KEY) as Mode | null) ?? "system", localStorage.getItem(THEME_KEY) ?? "sage");
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  const pickMode = (m: Mode) => { setMode(m); localStorage.setItem(MODE_KEY, m); apply(m, theme); };
-  const pickTheme = (t: string) => { setTheme(t); localStorage.setItem(THEME_KEY, t); apply(mode, t); };
+  const { mode, theme, pickMode, pickTheme } = useTheme();
 
   return (
     <Dialog>

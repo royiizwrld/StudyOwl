@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { addDays, format } from "date-fns";
+import { toast } from "sonner";
+import { diffData, loadCloud, pushDiff } from "./cloud";
 import { weekKey, clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, withStatus, type BulkDraftSubject } from "./logic";
 import {
   colorAt,
@@ -18,7 +20,8 @@ import {
   type TopicStatus,
 } from "./types";
 
-const KEY = "study-planner:v1";
+export const LOCAL_KEY = "study-planner:v1";
+const KEY = LOCAL_KEY;
 export const DEFAULT_GRADE_GOALS: GradeGoals = { overallTarget: null, maskTarget: false, hideComparison: false };
 export const uid = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -80,44 +83,116 @@ function seed(): StudyData {
   };
 }
 
-function load(): StudyData {
+/** Reads data saved on this device by the pre-account version of the app (null when none). */
+export function readLocalData(): StudyData | null {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return seed();
+    if (!raw) return null;
     const p = JSON.parse(raw) as Partial<StudyData>;
-    return {
-      subjects: p.subjects ?? [],
-      topics: p.topics ?? [],
-      tasks: p.tasks ?? [],
-      sessions: p.sessions ?? [],
+    const strip = <T extends { sample?: boolean }>(a: T[] | undefined) => (a ?? []).filter((x) => !x.sample);
+    const d: StudyData = {
+      subjects: strip(p.subjects),
+      topics: strip(p.topics),
+      tasks: strip(p.tasks),
+      sessions: strip(p.sessions),
       settings: clampSettings({ ...DEFAULT_SETTINGS, ...(p.settings ?? {}) }),
       dailyGoal: p.dailyGoal ?? DEFAULT_DAILY_GOAL,
-      scores: p.scores ?? [],
-      examPeriods: p.examPeriods ?? [],
-      papers: p.papers ?? [],
+      scores: strip(p.scores),
+      examPeriods: strip(p.examPeriods),
+      papers: strip(p.papers),
       gradeGoals: { ...DEFAULT_GRADE_GOALS, ...(p.gradeGoals ?? {}) },
-      objectives: p.objectives ?? [],
+      objectives: strip(p.objectives),
     };
+    const any = d.subjects.length + d.topics.length + d.tasks.length + d.sessions.length + d.scores.length + d.objectives.length + d.examPeriods.length;
+    return any ? d : null;
   } catch {
-    return seed();
+    return null;
   }
 }
 
-function useStoreValue() {
+export type StoreMode = { kind: "demo" } | { kind: "cloud"; userId: string };
+export type SyncState = "idle" | "saving" | "error" | "offline";
+
+function useStoreValue(mode: StoreMode) {
   const [data, setData] = useState<StudyData>(EMPTY);
   const [ready, setReady] = useState(false);
-  const loaded = useRef(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [sync, setSync] = useState<SyncState>("idle");
+  const saved = useRef<StudyData>(EMPTY);
+  const latest = useRef<StudyData>(EMPTY);
+  latest.current = data;
+  const userId = mode.kind === "cloud" ? mode.userId : null;
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
-    if (loaded.current) return;
-    loaded.current = true;
-    setData(load());
-    setReady(true);
-  }, []);
+    let cancelled = false;
+    if (!userId) {
+      const s = seed();
+      setData(s);
+      saved.current = s;
+      setReady(true);
+      return;
+    }
+    setReady(false);
+    setLoadError(null);
+    loadCloud(userId, EMPTY, DEFAULT_GRADE_GOALS)
+      .then((d) => {
+        if (cancelled) return;
+        saved.current = d;
+        setData(d);
+        setReady(true);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        console.error("load failed", e);
+        setLoadError(navigator.onLine ? "We couldn't load your study data." : "You're offline, so your study data couldn't load.");
+      });
+    return () => { cancelled = true; };
+  }, [userId, reloadTick]);
 
+  const pushing = useRef<Promise<void> | null>(null);
+  const flush = useCallback(async (): Promise<boolean> => {
+    if (!userId) return true;
+    if (pushing.current) await pushing.current.catch(() => undefined);
+    const target = latest.current;
+    const diff = diffData(saved.current, target);
+    if (diff.empty) { setSync("idle"); return true; }
+    setSync("saving");
+    const job = pushDiff(userId, diff);
+    pushing.current = job;
+    try {
+      await job;
+      saved.current = target;
+      setSync(diffData(target, latest.current).empty ? "idle" : "saving");
+      return true;
+    } catch (e) {
+      console.error("save failed", e);
+      setSync(navigator.onLine ? "error" : "offline");
+      return false;
+    } finally {
+      pushing.current = null;
+    }
+  }, [userId]);
+
+  // Debounced background save after every change (optimistic: UI already updated).
   useEffect(() => {
-    if (ready) localStorage.setItem(KEY, JSON.stringify(data));
-  }, [data, ready]);
+    if (!ready || !userId) return;
+    if (diffData(saved.current, data).empty) return;
+    const t = setTimeout(() => {
+      void flush().then((ok) => {
+        if (!ok) toast.error("Couldn't save your latest changes", { id: "sync-error", description: "They're kept on this screen. Tap retry.", action: { label: "Retry", onClick: () => void flush() } });
+        else toast.dismiss("sync-error");
+      });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [data, ready, userId, flush]);
+
+  // Retry automatically when the connection comes back.
+  useEffect(() => {
+    const on = () => void flush();
+    window.addEventListener("online", on);
+    return () => window.removeEventListener("online", on);
+  }, [flush]);
 
   const update = useCallback((fn: (d: StudyData) => StudyData) => setData(fn), []);
 
@@ -288,14 +363,43 @@ function useStoreValue() {
 
   const hasSample = data.subjects.some((s) => s.sample) || data.topics.some((t) => t.sample) || data.tasks.some((t) => t.sample);
 
-  return { ...data, ready, hasSample, ...actions };
+  const importData = useCallback(async (local: StudyData) => {
+    setData((d) => {
+      const merge = <T extends { id: string }>(a: T[], b: T[]) => {
+        const ids = new Set(a.map((x) => x.id));
+        return [...a, ...b.filter((x) => !ids.has(x.id))];
+      };
+      return {
+        ...d,
+        subjects: merge(d.subjects, local.subjects),
+        topics: merge(d.topics, local.topics),
+        tasks: merge(d.tasks, local.tasks),
+        sessions: merge(d.sessions, local.sessions),
+        scores: merge(d.scores, local.scores),
+        examPeriods: merge(d.examPeriods, local.examPeriods),
+        papers: merge(d.papers, local.papers),
+        objectives: merge(d.objectives, local.objectives),
+        settings: local.settings,
+        dailyGoal: local.dailyGoal,
+        gradeGoals: local.gradeGoals,
+      };
+    });
+    await new Promise((r) => setTimeout(r, 0));
+    return flush();
+  }, [flush]);
+
+  return {
+    ...data, ready, hasSample, ...actions,
+    isDemo: mode.kind === "demo",
+    sync, loadError, retrySync: flush, reload: () => setReloadTick((n) => n + 1), importData,
+  };
 }
 
 type Store = ReturnType<typeof useStoreValue>;
 const Ctx = createContext<Store | null>(null);
 
-export function StudyProvider({ children }: { children: ReactNode }) {
-  const value = useStoreValue();
+export function StudyProvider({ children, mode }: { children: ReactNode; mode: StoreMode }) {
+  const value = useStoreValue(mode);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

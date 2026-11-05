@@ -14,7 +14,7 @@ import { TopicRow } from "@/components/TopicRow";
 import { EmptyState, PageHeader } from "@/components/ui-bits";
 import { useStudy } from "@/lib/store";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Studyowl Study Planner" },

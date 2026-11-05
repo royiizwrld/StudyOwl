@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui-bits";
 import { useStudy } from "@/lib/store";
 import { todayStart } from "@/lib/logic";
 
-export const Route = createFileRoute("/focus")({
+export const Route = createFileRoute("/_authenticated/focus")({
   head: () => ({
     meta: [
       { title: "Focus timer — Studyowl" },

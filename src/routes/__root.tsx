@@ -12,9 +12,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { StudyProvider } from "@/lib/store";
-import { TimerProvider } from "@/lib/timer";
-import { AppShell } from "@/components/AppShell";
+import { AuthProvider } from "@/lib/auth";
+import { THEME_BOOT_SCRIPT, useThemeSync } from "@/lib/theme";
+import { PwaProvider } from "@/lib/pwa";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -86,13 +86,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Plan subjects and topics, focus with Pomodoro, and track your study streak." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#4b7453" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "Study" },
     ],
+    scripts: [{ children: THEME_BOOT_SCRIPT }],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -121,20 +129,24 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function ThemeSync() {
+  useThemeSync();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <StudyProvider>
-        <TimerProvider>
-          <AppShell>
-            <Outlet />
-          </AppShell>
+      <AuthProvider>
+        <PwaProvider>
+          <ThemeSync />
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
           <Toaster position="top-center" />
-        </TimerProvider>
-      </StudyProvider>
+        </PwaProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import { useStudy } from "@/lib/store";
 
-export const Route = createFileRoute("/tasks")({
+export const Route = createFileRoute("/_authenticated/tasks")({
   head: () => ({
     meta: [
       { title: "Tasks & Objectives — Studyowl" },
