@@ -13,7 +13,7 @@ import { subjectProgress } from "@/lib/logic";
 import { useStudy } from "@/lib/store";
 import { STATUS_LABEL, type TopicStatus } from "@/lib/types";
 
-export const Route = createFileRoute("/subjects/$subjectId")({
+export const Route = createFileRoute("/_authenticated/subjects/$subjectId")({
   head: () => ({
     meta: [
       { title: "Subject topics — Studyowl" },

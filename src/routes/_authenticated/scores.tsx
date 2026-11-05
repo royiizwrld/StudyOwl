@@ -19,7 +19,7 @@ import { averagePct, countedScores, daysUntil, pct, periodGrade } from "@/lib/lo
 import { useStudy } from "@/lib/store";
 import { SCORE_TYPE_LABEL, type ExamPaper, type ExamPeriod, type ScoreType, type TestScore } from "@/lib/types";
 
-export const Route = createFileRoute("/scores")({
+export const Route = createFileRoute("/_authenticated/scores")({
   head: () => ({
     meta: [
       { title: "Scores & Exams — Studyowl" },

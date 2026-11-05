@@ -6,7 +6,7 @@ import { StatusButton } from "@/components/TopicRow";
 import { EmptyState, PageHeader, PriorityBadge, SubjectDot } from "@/components/ui-bits";
 import { useStudy } from "@/lib/store";
 
-export const Route = createFileRoute("/review")({
+export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({
     meta: [
       { title: "Review list — Studyowl" },
