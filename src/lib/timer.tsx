@@ -45,7 +45,7 @@ function beep() {
 }
 
 function useTimerValue() {
-  const { settings, ready, logSession } = useStudy();
+  const { settings, ready, logSession, isDemo } = useStudy();
   const [state, setState] = useState<TimerState>(() => initial(settings));
   const [now, setNow] = useState(() => Date.now());
   const hydrated = useRef(false);
@@ -57,17 +57,17 @@ function useTimerValue() {
     if (!ready || hydrated.current) return;
     hydrated.current = true;
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = isDemo ? null : localStorage.getItem(KEY);
       if (raw) setState(JSON.parse(raw));
       else setState(initial(settings));
     } catch {
       setState(initial(settings));
     }
-  }, [ready, settings]);
+  }, [ready, settings, isDemo]);
 
   useEffect(() => {
-    if (hydrated.current) localStorage.setItem(KEY, JSON.stringify(state));
-  }, [state]);
+    if (hydrated.current && !isDemo) localStorage.setItem(KEY, JSON.stringify(state));
+  }, [state, isDemo]);
 
   const remaining = state.running && state.endsAt ? remainingFrom(state.endsAt, now) : state.remainingMs;
 
