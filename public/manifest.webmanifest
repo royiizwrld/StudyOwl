@@ -1,0 +1,16 @@
+{
+  "name": "Study Planner",
+  "short_name": "Study",
+  "description": "Plan subjects and topics, focus with Pomodoro sessions, and let the AI study coach show you what to study next.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f9f6f1",
+  "theme_color": "#4b7453",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
