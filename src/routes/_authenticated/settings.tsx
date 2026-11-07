@@ -98,7 +98,7 @@ function SettingsPage() {
       </Section>
 
       <Section title="Pomodoro timer">
-        <p className="text-sm text-muted-foreground">Focus {settings.focus} min · Short break {settings.short} min{settings.longEnabled ? ` · Long break ${settings.long} min every ${settings.longEvery}` : ""}</p>
+        <p className="text-sm text-muted-foreground">Focus {settings.focus} min · Short break {settings.shortBreak} min{settings.longBreakEnabled ? ` · Long break ${settings.longBreak} min every ${settings.longBreakEvery} sessions` : ""}</p>
         <TimerSettingsDialog />
       </Section>
 

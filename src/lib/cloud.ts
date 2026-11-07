@@ -16,18 +16,19 @@ export const COLLECTIONS = {
 export type CollectionKey = keyof typeof COLLECTIONS;
 const KEYS = Object.keys(COLLECTIONS) as CollectionKey[];
 
+type Client = typeof supabase;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const table = (name: string) => supabase.from(name as any) as any;
+const table = (name: string, c: Client = supabase) => c.from(name as any) as any;
 
-export async function loadCloud(userId: string, base: StudyData, defaultsGrade: GradeGoals): Promise<StudyData> {
+export async function loadCloud(userId: string, base: StudyData, defaultsGrade: GradeGoals, client: Client = supabase): Promise<StudyData> {
   const results = await Promise.all(
     KEYS.map(async (k) => {
-      const { data, error } = await table(COLLECTIONS[k]).select("data").eq("user_id", userId).limit(10000);
+      const { data, error } = await table(COLLECTIONS[k], client).select("data").eq("user_id", userId).limit(10000);
       if (error) throw error;
       return [k, (data as { data: unknown }[]).map((r) => r.data)] as const;
     }),
   );
-  const { data: prof, error } = await supabase.from("profiles").select("pomodoro_settings, daily_goal, grade_goals").eq("id", userId).maybeSingle();
+  const { data: prof, error } = await client.from("profiles").select("pomodoro_settings, daily_goal, grade_goals").eq("id", userId).maybeSingle();
   if (error) throw error;
   const out: StudyData = { ...base };
   for (const [k, rows] of results) (out as unknown as Record<string, unknown[]>)[k] = rows;
