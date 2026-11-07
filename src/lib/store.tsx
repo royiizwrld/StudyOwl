@@ -28,7 +28,7 @@ export const uid = () =>
     ? crypto.randomUUID().slice(0, 8)
     : Math.random().toString(36).slice(2, 10);
 
-const EMPTY: StudyData = {
+export const EMPTY_DATA: StudyData = {
   subjects: [],
   topics: [],
   tasks: [],
@@ -41,6 +41,8 @@ const EMPTY: StudyData = {
   gradeGoals: DEFAULT_GRADE_GOALS,
   objectives: [],
 };
+
+const EMPTY = EMPTY_DATA;
 
 function seed(): StudyData {
   const now = Date.now();

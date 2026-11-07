@@ -3,6 +3,10 @@ import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage }
 import { z } from "zod";
 import { createGateway, friendlyError, REASONING_OPTIONS } from "@/lib/ai/gateway.server";
 import { withLovableAiGatewayRunIdHeader } from "@/lib/ai/run-id.server";
+import { unauthorized, userFromRequest } from "@/lib/ai/auth.server";
+import { loadCloud } from "@/lib/cloud";
+import { buildSummary } from "@/lib/summary";
+import { DEFAULT_GRADE_GOALS, EMPTY_DATA } from "@/lib/store";
 
 const INSTRUCTIONS = `You are Ollie, a calm, encouraging study coach inside a student's study planner.
 You receive a JSON snapshot of the student's data with every message (subjects, topic statuses, flagged topics with how many days ago they were flagged, focus minutes per subject over the last 7 and 30 days, upcoming due dates in days, open tasks, today's focus vs. daily goal, streak, and Pomodoro settings in minutes).
@@ -38,13 +42,14 @@ const proposeActions = tool({
 
 const bodySchema = z.object({
   messages: z.array(z.any()).max(200),
-  summary: z.unknown(),
 });
 
 export const Route = createFileRoute("/api/assistant")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const me = await userFromRequest(request);
+        if (!me) return unauthorized();
         let body: z.infer<typeof bodySchema>;
         try {
           body = bodySchema.parse(await request.json());
@@ -54,7 +59,15 @@ export const Route = createFileRoute("/api/assistant")({
         const gw = createGateway(request);
         if (!gw) return Response.json({ error: "The AI service isn't configured." }, { status: 500 });
         const messages = body.messages as UIMessage[];
-        const snapshot = JSON.stringify(body.summary ?? {}).slice(0, 60000);
+        let snapshot: string;
+        try {
+          // Built on the server from the signed-in user's own rows only (RLS-scoped client).
+          const data = await loadCloud(me.userId, EMPTY_DATA, DEFAULT_GRADE_GOALS, me.supabase);
+          snapshot = JSON.stringify(buildSummary(data)).slice(0, 60000);
+        } catch (e) {
+          console.error("assistant data load failed", e);
+          return Response.json({ error: "Couldn't read your study data. Please try again." }, { status: 503 });
+        }
         try {
           const result = streamText({
             model: gw.model,

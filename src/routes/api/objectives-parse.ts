@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { unauthorized, userFromRequest } from "@/lib/ai/auth.server";
 import { NoObjectGeneratedError, Output, streamText, type ModelMessage } from "ai";
 import { z } from "zod";
 import { createGateway, friendlyError, REASONING_OPTIONS } from "@/lib/ai/gateway.server";
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/api/objectives-parse")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!(await userFromRequest(request))) return unauthorized();
         let body: z.infer<typeof bodySchema>;
         try {
           body = bodySchema.parse(await request.json());
