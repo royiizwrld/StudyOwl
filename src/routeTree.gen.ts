@@ -21,6 +21,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedFocusRouteImport } from './routes/_authenticated/focus'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedScoresRouteImport } from './routes/_authenticated/scores'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
@@ -88,6 +89,11 @@ const AuthenticatedScoresRoute = AuthenticatedScoresRouteImport.update({
   path: '/scores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/focus': typeof AuthenticatedFocusRoute
   '/review': typeof AuthenticatedReviewRoute
   '/scores': typeof AuthenticatedScoresRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/focus': typeof AuthenticatedFocusRoute
   '/review': typeof AuthenticatedReviewRoute
   '/scores': typeof AuthenticatedScoresRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/focus': typeof AuthenticatedFocusRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/scores': typeof AuthenticatedScoresRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/api/assistant': typeof ApiAssistantRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/focus'
     | '/review'
     | '/scores'
+    | '/settings'
     | '/stats'
     | '/tasks'
     | '/api/assistant'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/focus'
     | '/review'
     | '/scores'
+    | '/settings'
     | '/stats'
     | '/tasks'
     | '/api/assistant'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/focus'
     | '/_authenticated/review'
     | '/_authenticated/scores'
+    | '/_authenticated/settings'
     | '/_authenticated/stats'
     | '/_authenticated/tasks'
     | '/api/assistant'
@@ -352,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScoresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/stats': {
       id: '/_authenticated/stats'
       path: '/stats'
@@ -409,6 +428,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFocusRoute: typeof AuthenticatedFocusRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedScoresRoute: typeof AuthenticatedScoresRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedSubjectsSubjectIdRoute: typeof AuthenticatedSubjectsSubjectIdRoute
@@ -420,6 +440,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFocusRoute: AuthenticatedFocusRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedScoresRoute: AuthenticatedScoresRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedSubjectsSubjectIdRoute: AuthenticatedSubjectsSubjectIdRoute,
