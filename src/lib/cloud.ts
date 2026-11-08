@@ -28,7 +28,7 @@ export async function loadCloud(userId: string, base: StudyData, defaultsGrade: 
       return [k, (data as { data: unknown }[]).map((r) => r.data)] as const;
     }),
   );
-  const { data: prof, error } = await client.from("profiles").select("pomodoro_settings, daily_goal, grade_goals").eq("id", userId).maybeSingle();
+  const { data: prof, error } = await client.from("profiles").select("*").eq("id", userId).maybeSingle();
   if (error) throw error;
   const out: StudyData = { ...base };
   for (const [k, rows] of results) (out as unknown as Record<string, unknown[]>)[k] = rows;
@@ -78,7 +78,7 @@ export async function pushDiff(userId: string, diff: Diff) {
   for (const [k, ids] of Object.entries(diff.deletes) as [CollectionKey, string[]][]) {
     jobs.push(table(COLLECTIONS[k]).delete().eq("user_id", userId).in("id", ids));
   }
-  if (diff.profile) jobs.push(supabase.from("profiles").update(diff.profile).eq("id", userId));
+  if (diff.profile) jobs.push(supabase.from("profiles").update(diff.profile as never).eq("id", userId));
   const res = await Promise.all(jobs);
   const failed = res.find((r) => r.error);
   if (failed) throw failed.error;

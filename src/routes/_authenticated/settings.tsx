@@ -52,7 +52,7 @@ function SettingsPage() {
   useEffect(() => { setFirst(profile?.first_name ?? ""); setLast(profile?.last_name ?? ""); }, [profile?.first_name, profile?.last_name]);
 
   const saveName = async () => {
-    if (!first.trim()) return toast.error("First name can't be empty.");
+    if (!first.trim()) { toast.error("First name can't be empty."); return; }
     try { await updateProfile({ first_name: first.trim(), last_name: last.trim() || null }); toast.success("Name saved"); }
     catch { toast.error("Couldn't save your name. Check your connection and try again."); }
   };

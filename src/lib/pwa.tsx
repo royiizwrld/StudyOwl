@@ -41,7 +41,7 @@ export function swBlocked() {
     return true;
   }
   const h = window.location.hostname.toLowerCase();
-  const label = h.split(".")[0];
+  const label = h.split(".")[0] ?? "";
   const previewDomain = /\.(lovable\.app|gpt-eng\.com|gptengineer\.run)$/.test(h);
   if (previewDomain && /^(?:id-preview|preview)(?:-[a-z0-9]+)?--.+$/.test(label)) return true;
   if (previewDomain && /^project--.+-dev$/.test(label)) return true;
