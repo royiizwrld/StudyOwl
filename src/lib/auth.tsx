@@ -93,3 +93,9 @@ export function isStandalone() {
 export function safeRedirect(r: unknown, fallback = "/dashboard") {
   return typeof r === "string" && r.startsWith("/") && !r.startsWith("//") ? r : fallback;
 }
+
+/** Bearer header for calls to the app's own AI endpoints. */
+export async function authHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  return data.session ? { authorization: `Bearer ${data.session.access_token}` } : {};
+}

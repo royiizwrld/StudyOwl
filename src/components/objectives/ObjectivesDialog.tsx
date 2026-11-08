@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { assignWeeks, parseObjectiveText, weekKey } from "@/lib/logic";
 import { useStudy } from "@/lib/store";
+import { authHeaders } from "@/lib/auth";
 
 type DraftWeek = { title: string; subjectId: string | null; objectives: string[] };
 
@@ -52,7 +53,7 @@ export function ObjectivesDialog({ trigger, defaultWeek }: { trigger: ReactNode;
         if (file.type.startsWith("text/") || /\.(txt|md|csv)$/i.test(file.name)) payload["text"] = `${text}\n${await file.text()}`;
         else payload["file"] = { dataUrl: await readAsDataUrl(file), mediaType: file.type || "application/pdf", name: file.name };
       }
-      const res = await fetch("/api/objectives-parse", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch("/api/objectives-parse", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(payload) });
       const body = (await res.json().catch(() => ({}))) as { weeks?: { title: string; subject: string | null; objectives: string[] }[]; error?: string };
       if (!res.ok || !body.weeks) throw new Error(body.error ?? "Something went wrong. Please try again.");
       setWeeks(body.weeks.map((w) => ({ title: w.title, subjectId: matchSubject(w.subject), objectives: w.objectives })));

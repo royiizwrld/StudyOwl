@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { norm } from "@/lib/logic";
 import { useStudy } from "@/lib/store";
+import { authHeaders } from "@/lib/auth";
 import { STATUS_LABEL, type Priority, type TopicStatus } from "@/lib/types";
 
 interface DraftTopic {
@@ -67,7 +68,7 @@ export function BulkAddDialog({ trigger }: { trigger: ReactNode }) {
           payload = { ...payload, file: { dataUrl: await readAsDataUrl(file), mediaType: file.type, name: file.name } };
         } else throw new Error("Please upload a .txt, PDF or image file.");
       }
-      const res = await fetch("/api/bulk-parse", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch("/api/bulk-parse", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(payload) });
       const data = (await res.json().catch(() => null)) as { subjects?: { name: string; topics: string[] }[]; error?: string } | null;
       if (!res.ok || !data?.subjects) throw new Error(data?.error ?? "The AI response couldn't be read. Please try again.");
       if (data.subjects.length === 0) throw new Error("We couldn't find any subjects or topics in that. Try a format like “Chemistry: bonding, moles”.");
