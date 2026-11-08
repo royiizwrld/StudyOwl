@@ -24,7 +24,7 @@ export function AuthCard({ title, subtitle, children, footer }: { title: string;
   );
 }
 
-export function Field({ label, error, children, id, hint }: { label: string; error?: string | null; children: ReactNode; id: string; hint?: string }) {
+export function Field({ label, error, children, id, hint }: { label: string; error?: string | null | undefined; children: ReactNode; id: string; hint?: string | undefined }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
@@ -35,7 +35,7 @@ export function Field({ label, error, children, id, hint }: { label: string; err
   );
 }
 
-export function PasswordInput({ value, onChange, error, autoComplete, label = "Password", hint }: { value: string; onChange: (v: string) => void; error?: string | null; autoComplete: string; label?: string; hint?: string }) {
+export function PasswordInput({ value, onChange, error, autoComplete, label = "Password", hint }: { value: string; onChange: (v: string) => void; error?: string | null | undefined; autoComplete: string; label?: string; hint?: string | undefined | undefined }) {
   const id = useId();
   const [show, setShow] = useState(false);
   return (

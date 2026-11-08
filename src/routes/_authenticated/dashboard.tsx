@@ -11,7 +11,8 @@ import { SubjectCard } from "@/components/SubjectCard";
 import { SubjectDialog } from "@/components/SubjectDialog";
 import { TaskRow } from "@/components/TaskRow";
 import { TopicRow } from "@/components/TopicRow";
-import { EmptyState, PageHeader } from "@/components/ui-bits";
+import { PageHeader } from "@/components/ui-bits";
+import { useAuth } from "@/lib/auth";
 import { useStudy } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { subjects, topics, tasks, hasSample, clearSample, ready } = useStudy();
+  const { profile } = useAuth();
   const upcomingTasks = tasks.filter((t) => !t.done).sort((a, b) => (a.dueDate ?? "9").localeCompare(b.dueDate ?? "9")).slice(0, 4);
   const upcomingTopics = topics
     .filter((t) => t.dueDate && t.status !== "understood")
@@ -37,7 +39,7 @@ function Dashboard() {
   return (
     <div>
       <PageHeader
-        title="Today"
+        title={profile?.first_name ? `Hi, ${profile.first_name}` : "Today"}
         subtitle={format(new Date(), "EEEE, MMMM d")}
         actions={
           <>
@@ -84,7 +86,14 @@ function Dashboard() {
           </Link>
         </div>
         {ready && subjects.length === 0 ? (
-          <EmptyState title="No subjects yet" body="Add a subject or paste your syllabus with Bulk add." />
+          <div className="card-surface flex flex-col items-center gap-3 p-8 text-center">
+            <h3 className="font-display text-lg font-semibold">Let's set up your planner</h3>
+            <p className="max-w-sm text-sm text-muted-foreground">Add your first subject, or paste your syllabus or topic list and Bulk add will organise it for you.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <SubjectDialog trigger={<Button><Plus /> Add your first subject</Button>} />
+              <BulkAddDialog trigger={<Button variant="outline"><Wand2 /> Bulk add</Button>} />
+            </div>
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {subjects.map((s) => (

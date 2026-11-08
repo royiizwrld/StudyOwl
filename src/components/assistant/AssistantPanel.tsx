@@ -12,7 +12,7 @@ import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea 
 import { Tool, ToolContent, ToolHeader, ToolInput } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useStudy } from "@/lib/store";
-import { buildSummary } from "@/lib/summary";
+import { authHeaders } from "@/lib/auth";
 import { STATUS_LABEL, type Priority, type TopicStatus } from "@/lib/types";
 import owl from "@/assets/owl.png";
 
@@ -151,7 +151,7 @@ function ChatBody({ session, onSave }: { session: ChatSession; onSave: (msgs: UI
   const { messages, sendMessage, status, stop, setMessages, error } = useChat({
     id: session.id,
     messages: initial,
-    transport: new DefaultChatTransport({ api: "/api/assistant" }),
+    transport: new DefaultChatTransport({ api: "/api/assistant", headers: async () => authHeaders() }),
     onError: (e) => {
       let msg = e.message;
       try {
@@ -180,7 +180,7 @@ function ChatBody({ session, onSave }: { session: ChatSession; onSave: (msgs: UI
   const send = (t: string) => {
     if (!t.trim() || busy) return;
     if (voice.listening) voice.stop();
-    sendMessage({ text: t.trim() }, { body: { summary: buildSummary(storeRef.current) } });
+    sendMessage({ text: t.trim() });
     setText("");
   };
   const markApplied = (id: string) => {

@@ -58,6 +58,7 @@ function Login() {
       subtitle="Sign in to pick up where you left off."
       footer={<>New here? <Link to="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">Create an account</Link></>}
     >
+      {search.verified && !search.reset && <Alert className="mb-4"><AlertDescription>Email confirmed — you can sign in now.</AlertDescription></Alert>}
       {search.reset && <Alert className="mb-4"><AlertDescription>Your password was updated. Sign in with your new password.</AlertDescription></Alert>}
       {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
       <form onSubmit={submit} noValidate className="space-y-4">
