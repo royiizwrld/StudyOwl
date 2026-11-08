@@ -61,9 +61,9 @@ export function diffData(prev: StudyData, next: StudyData): Diff {
     if (dels.length) { d.deletes[k] = dels; d.empty = false; }
   }
   const p: Record<string, unknown> = {};
-  if (JSON.stringify(prev.settings) !== JSON.stringify(next.settings)) p.pomodoro_settings = next.settings;
-  if (prev.dailyGoal !== next.dailyGoal) p.daily_goal = next.dailyGoal;
-  if (JSON.stringify(prev.gradeGoals) !== JSON.stringify(next.gradeGoals)) p.grade_goals = next.gradeGoals;
+  if (JSON.stringify(prev.settings) !== JSON.stringify(next.settings)) p["pomodoro_settings"] = next.settings;
+  if (prev.dailyGoal !== next.dailyGoal) p["daily_goal"] = next.dailyGoal;
+  if (JSON.stringify(prev.gradeGoals) !== JSON.stringify(next.gradeGoals)) p["grade_goals"] = next.gradeGoals;
   if (Object.keys(p).length) { d.profile = p; d.empty = false; }
   return d;
 }
