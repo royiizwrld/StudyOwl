@@ -154,7 +154,7 @@ function ChangePassword({ email }: { email: string }) {
   };
   return (
     <Section title="Change password">
-      <form onSubmit={submit} noValidate className="grid gap-3 sm:max-w-sm">
+      <form method="post" onSubmit={submit} noValidate className="grid gap-3 sm:max-w-sm">
         <PasswordInput label="Current password" value={current} onChange={setCurrent} error={errs.c} autoComplete="current-password" />
         <PasswordInput label="New password" value={next} onChange={setNext} error={errs.n} autoComplete="new-password" hint="At least 8 characters." />
         <PasswordInput label="Confirm new password" value={confirm} onChange={setConfirm} error={errs.m} autoComplete="new-password" />

@@ -46,7 +46,7 @@ function Forgot() {
           <p className="text-sm">If an account exists for <strong className="break-all">{email}</strong>, a reset link is on its way. Check your inbox and spam folder.</p>
         </div>
       ) : (
-        <form onSubmit={submit} noValidate className="space-y-4">
+        <form method="post" onSubmit={submit} noValidate className="space-y-4">
           {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
           <Field label="Email" id="email" error={fieldError}>
             <Input id="email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!fieldError} className="h-11" />

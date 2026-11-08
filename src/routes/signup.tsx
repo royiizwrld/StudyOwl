@@ -109,7 +109,7 @@ function Signup() {
       footer={<>Already have an account? <Link to="/login" className="font-semibold text-primary underline-offset-4 hover:underline">Sign in</Link></>}
     >
       {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
-      <form onSubmit={submit} noValidate className="space-y-4">
+      <form method="post" onSubmit={submit} noValidate className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="First name" id="first" error={errors.first}>
             <Input id="first" autoComplete="given-name" value={first} onChange={(e) => setFirst(e.target.value)} aria-invalid={!!errors.first} aria-describedby={errors.first ? "first-error" : undefined} className="h-11" />

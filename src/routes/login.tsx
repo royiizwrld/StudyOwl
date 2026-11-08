@@ -61,7 +61,7 @@ function Login() {
       {search.verified && !search.reset && <Alert className="mb-4"><AlertDescription>Email confirmed — you can sign in now.</AlertDescription></Alert>}
       {search.reset && <Alert className="mb-4"><AlertDescription>Your password was updated. Sign in with your new password.</AlertDescription></Alert>}
       {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
-      <form onSubmit={submit} noValidate className="space-y-4">
+      <form method="post" onSubmit={submit} noValidate className="space-y-4">
         <Field label="Email" id="email" error={errors.email}>
           <Input id="email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} className="h-11" />
         </Field>

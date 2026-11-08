@@ -65,7 +65,7 @@ function Reset() {
         </div>
       )}
       {ready && (
-        <form onSubmit={submit} noValidate className="space-y-4">
+        <form method="post" onSubmit={submit} noValidate className="space-y-4">
           {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
           <PasswordInput label="New password" value={password} onChange={setPassword} error={errors.p} autoComplete="new-password" hint="At least 8 characters." />
           <PasswordInput label="Confirm new password" value={confirm} onChange={setConfirm} error={errors.c} autoComplete="new-password" />
