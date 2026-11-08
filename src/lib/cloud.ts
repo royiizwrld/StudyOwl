@@ -28,7 +28,8 @@ export async function loadCloud(userId: string, base: StudyData, defaultsGrade: 
       return [k, (data as { data: unknown }[]).map((r) => r.data)] as const;
     }),
   );
-  const { data: prof, error } = await client.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data: profRow, error } = await client.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const prof = profRow as { pomodoro_settings: unknown; daily_goal: number; grade_goals: unknown } | null;
   if (error) throw error;
   const out: StudyData = { ...base };
   for (const [k, rows] of results) (out as unknown as Record<string, unknown[]>)[k] = rows;
