@@ -10,7 +10,10 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
-- All planner data lives in browser localStorage through the single `StudyProvider`/`useStudy()` in `src/lib/store.tsx`; components never touch storage directly — one source of truth.
+- All planner data flows through the single `StudyProvider`/`useStudy()` in `src/lib/store.tsx`, which loads the signed-in user's rows from the cloud and saves changes by diffing state (`src/lib/cloud.ts`, one jsonb row per item, RLS by user_id); components never touch storage directly — optimistic UI, one source of truth.
+- Signed-in pages live under `src/routes/_authenticated/` (client-only guard redirecting to /login); public pages stay top-level — keeps the landing/auth/legal pages crawlable.
+- AI endpoints verify the bearer token and the assistant builds its data snapshot server-side from the caller's own rows — never trust client-sent data.
+- The service worker registers only via `src/lib/pwa.tsx` (production, non-preview hosts) and precaches static assets only — preview and API/auth calls are never cached.
 - Pure planner rules (timer limits, streaks, bulk merge) live in `src/lib/logic.ts` with tests in `src/test/logic.test.ts` — keeps rules testable.
 - AI calls run only in server routes under `src/routes/api/` using `src/lib/ai/*.server.ts` — keeps the key off the browser.
 - Assistant quick actions are proposals only; the UI applies them after the user confirms — the AI never changes data itself.
