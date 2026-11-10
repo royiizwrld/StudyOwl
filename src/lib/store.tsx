@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { addDays, format } from "date-fns";
 import { toast } from "sonner";
-import { diffData, loadCloud, pushDiff } from "./cloud";
+import { loadCloud, pushAction } from "./cloud";
+import { readSnapshot, writeSnapshot, persistChange, overlayOutbox, replayOutbox } from "./offline";
 import { weekKey, clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS, mergeBulk, withStatus, type BulkDraftSubject } from "./logic";
 import {
   colorAt,
@@ -120,83 +121,115 @@ function useStoreValue(mode: StoreMode) {
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [sync, setSync] = useState<SyncState>("idle");
-  const saved = useRef<StudyData>(EMPTY);
   const latest = useRef<StudyData>(EMPTY);
-  latest.current = data;
   const userId = mode.kind === "cloud" ? mode.userId : null;
-  const [reloadTick, setReloadTick] = useState(0);
+  const [pendingChanges, setPendingChanges] = useState(0);
+  const active = useRef(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!userId) {
-      const s = seed();
-      setData(s);
-      saved.current = s;
-      setReady(true);
-      return;
-    }
-    setReady(false);
-    setLoadError(null);
-    loadCloud(userId, EMPTY, DEFAULT_GRADE_GOALS)
-      .then((d) => {
-        if (cancelled) return;
-        saved.current = d;
-        setData(d);
-        setReady(true);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        console.error("load failed", e);
-        setLoadError(navigator.onLine ? "We couldn't load your study data." : "You're offline, so your study data couldn't load.");
-      });
-    return () => { cancelled = true; };
-  }, [userId, reloadTick]);
-
-  const pushing = useRef<Promise<void> | null>(null);
   const flush = useCallback(async (): Promise<boolean> => {
     if (!userId) return true;
-    if (pushing.current) await pushing.current.catch(() => undefined);
-    const target = latest.current;
-    const diff = diffData(saved.current, target);
-    if (diff.empty) { setSync("idle"); return true; }
+    if (!navigator.onLine) { setSync("offline"); return false; }
     setSync("saving");
-    const job = pushDiff(userId, diff);
-    pushing.current = job;
     try {
-      await job;
-      saved.current = target;
-      setSync(diffData(target, latest.current).empty ? "idle" : "saving");
-      return true;
-    } catch (e) {
-      console.error("save failed", e);
+      const result = await replayOutbox(userId, pushAction.bind(null, userId));
+      if (!active.current) return false;
+      const cache = readSnapshot(userId);
+      setPendingChanges(cache.outbox.length);
+      setSync(cache.outbox.length ? "error" : "idle");
+      if (result.synced) toast.success(`Synced ${result.synced} changes`, { id: "sync-complete" });
+      if (result.dropped) toast.warning(`${result.dropped} changes could not be synced`, { description: "An item was removed or is no longer available. Your other changes are safe." });
+      return cache.outbox.length === 0;
+    } catch {
       setSync(navigator.onLine ? "error" : "offline");
       return false;
-    } finally {
-      pushing.current = null;
     }
   }, [userId]);
 
-  // Debounced background save after every change (optimistic: UI already updated).
-  useEffect(() => {
-    if (!ready || !userId) return;
-    if (diffData(saved.current, data).empty) return;
-    const t = setTimeout(() => {
-      void flush().then((ok) => {
-        if (!ok) toast.error("Couldn't save your latest changes", { id: "sync-error", description: "They're kept on this screen. Tap retry.", action: { label: "Retry", onClick: () => void flush() } });
-        else toast.dismiss("sync-error");
-      });
-    }, 500);
-    return () => clearTimeout(t);
-  }, [data, ready, userId, flush]);
+  const refresh = useCallback(async () => {
+    if (!userId || !navigator.onLine) return;
+    await flush();
+    try {
+      const cloud = await loadCloud(userId, EMPTY, DEFAULT_GRADE_GOALS);
+      if (!active.current) return;
+      // Read the queue AFTER fetching: edits made while the request ran must survive.
+      const cache = readSnapshot(userId);
+      const merged = overlayOutbox(cloud, cache.outbox);
+      writeSnapshot(userId, { ...cache, data: merged });
+      latest.current = merged;
+      setData(merged);
+      setReady(true);
+      setLoadError(null);
+    } catch {
+      if (!active.current) return;
+      if (!readSnapshot(userId).data) setLoadError("Connect once to download your planner for offline use.");
+      setSync(navigator.onLine ? "error" : "offline");
+    }
+  }, [userId, flush]);
 
-  // Retry automatically when the connection comes back.
   useEffect(() => {
-    const on = () => void flush();
-    window.addEventListener("online", on);
-    return () => window.removeEventListener("online", on);
-  }, [flush]);
+    active.current = true;
+    if (!userId) {
+      const sample = seed();
+      latest.current = sample;
+      setData(sample);
+      setReady(true);
+      return;
+    }
+    try {
+      const cache = readSnapshot(userId);
+      if (cache.data) {
+        latest.current = cache.data;
+        setData(cache.data);
+        setReady(true);
+      }
+      setPendingChanges(cache.outbox.length);
+      setSync(navigator.onLine ? (cache.outbox.length ? "saving" : "idle") : "offline");
+      if (!navigator.onLine && !cache.data) setLoadError("Connect once to download your planner for offline use.");
+      void refresh();
+    } catch { setLoadError("Device storage isn't available. Allow storage and try again."); }
+    const onOnline = () => void refresh();
+    const onOffline = () => setSync("offline");
+    const onVisible = () => { if (document.visibilityState === "visible") void refresh(); };
+    const onQueue = () => {
+      setPendingChanges(readSnapshot(userId).outbox.length);
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== `study-planner:offline:v1:${userId}`) return;
+      const cache = readSnapshot(userId);
+      if (cache.data) { latest.current = cache.data; setData(cache.data); }
+      onQueue();
+    };
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("study-outbox", onQueue);
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    const retry = setInterval(() => { if (navigator.onLine && document.visibilityState === "visible") void refresh(); }, 30000);
+    return () => {
+      active.current = false;
+      clearInterval(retry);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("study-outbox", onQueue);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [userId, refresh]);
 
-  const update = useCallback((fn: (d: StudyData) => StudyData) => setData(fn), []);
+  const update = useCallback((fn: (d: StudyData) => StudyData) => {
+    const previous = latest.current;
+    const next = fn(previous);
+    if (userId) {
+      try { persistChange(userId, previous, next); }
+      catch {
+        toast.error("Device storage is full or unavailable", { description: "This change wasn't saved. Free some space and try again." });
+        return;
+      }
+    }
+    latest.current = next;
+    setData(next);
+    if (userId) void flush();
+  }, [userId, flush]);
 
   const actions = useMemo(() => ({
     addSubject: (name: string, color: string) => {
@@ -366,7 +399,7 @@ function useStoreValue(mode: StoreMode) {
   const hasSample = data.subjects.some((s) => s.sample) || data.topics.some((t) => t.sample) || data.tasks.some((t) => t.sample);
 
   const importData = useCallback(async (local: StudyData) => {
-    setData((d) => {
+    update((d) => {
       const merge = <T extends { id: string }>(a: T[], b: T[]) => {
         const ids = new Set(a.map((x) => x.id));
         return [...a, ...b.filter((x) => !ids.has(x.id))];
@@ -388,12 +421,12 @@ function useStoreValue(mode: StoreMode) {
     });
     await new Promise((r) => setTimeout(r, 0));
     return flush();
-  }, [flush]);
+  }, [flush, update]);
 
   return {
     ...data, ready, hasSample, ...actions,
     isDemo: mode.kind === "demo",
-    sync, loadError, retrySync: flush, reload: () => setReloadTick((n) => n + 1), importData,
+    sync, pendingChanges, loadError, retrySync: refresh, reload: refresh, importData,
   };
 }
 

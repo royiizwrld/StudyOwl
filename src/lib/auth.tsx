@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { readSnapshot, writeSnapshot, queueProfile, replayOutbox } from "./offline";
+import { pushAction } from "./cloud";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Profile = Tables<"profiles">;
@@ -30,15 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(async (uid: string | undefined) => {
     if (!uid) return setProfile(null);
-    const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+    const cached = readSnapshot(uid);
+    if (cached.profile) setProfile(cached.profile as Profile);
+    if (!navigator.onLine) return;
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+    if (error) return;
     if (data) {
-      setProfile(data);
+      const cache = readSnapshot(uid);
+      const merged = cache.outbox.filter((a) => a.kind === "profile").reduce((p, a) => ({ ...p, ...a.value }), data);
+      setProfile(merged as Profile);
+      writeSnapshot(uid, { ...cache, profile: merged });
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (tz && data.timezone !== tz) void supabase.from("profiles").update({ timezone: tz }).eq("id", uid);
     } else {
       // Profile row missing (e.g. created before the trigger existed) — create it.
       const { data: created } = await supabase.from("profiles").insert({ id: uid }).select("*").maybeSingle();
       setProfile(created ?? null);
+      if (created) writeSnapshot(uid, { ...readSnapshot(uid), profile: created });
     }
   }, []);
 
@@ -51,8 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
-      await loadProfile(data.session?.user.id);
       setLoading(false);
+      void loadProfile(data.session?.user.id);
     });
     return () => sub.subscription.unsubscribe();
   }, [loadProfile]);
@@ -65,9 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshProfile: () => loadProfile(session?.user.id),
     updateProfile: async (patch) => {
       if (!session) return;
+      queueProfile(session.user.id, patch);
       setProfile((p) => (p ? { ...p, ...patch } : p));
-      const { error } = await supabase.from("profiles").update(patch).eq("id", session.user.id);
-      if (error) throw error;
+      await replayOutbox(session.user.id, pushAction.bind(null, session.user.id));
     },
     signOut: async () => {
       await supabase.auth.signOut();
