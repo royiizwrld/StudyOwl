@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { clampSettings, DEFAULT_DAILY_GOAL, DEFAULT_SETTINGS } from "./logic";
 import type { GradeGoals, StudyData, TimerSettings } from "./types";
+import type { OutboxAction } from "./offline";
 
 /** Which StudyData array lives in which database table. */
 export const COLLECTIONS = {
@@ -83,4 +84,20 @@ export async function pushDiff(userId: string, diff: Diff) {
   const res = await Promise.all(jobs);
   const failed = res.find((r) => r.error);
   if (failed) throw failed.error;
+}
+
+/** One idempotent write, confirmed before removing its durable outbox entry. */
+export async function pushAction(userId: string, action: OutboxAction) {
+  let result;
+  if (action.kind === "profile") {
+    result = await supabase.from("profiles").update(action.value as never).eq("id", userId).select("id").single();
+  } else if (action.collection && action.rowId) {
+    const target = table(COLLECTIONS[action.collection]);
+    result = action.kind === "delete"
+      ? await target.delete().eq("user_id", userId).eq("id", action.rowId)
+      : await target.upsert({ id: action.rowId, user_id: userId, data: action.value, updated_at: new Date().toISOString() }, { onConflict: "user_id,id" });
+  } else {
+    throw { code: "22P02", message: "Invalid queued change" };
+  }
+  if (result.error) throw result.error;
 }

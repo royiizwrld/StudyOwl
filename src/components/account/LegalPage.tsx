@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
-export const CONTACT_EMAIL = "hello@example.com"; // placeholder — replace before launch
+export const CONTACT_EMAIL = "royfrank028@gmail.com";
 export const LEGAL_UPDATED = "4 November 2026";
 
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {

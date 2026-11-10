@@ -10,10 +10,11 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
-- All planner data flows through the single `StudyProvider`/`useStudy()` in `src/lib/store.tsx`, which loads the signed-in user's rows from the cloud and saves changes by diffing state (`src/lib/cloud.ts`, one jsonb row per item, RLS by user_id); components never touch storage directly — optimistic UI, one source of truth.
+- All planner edits flow through StudyProvider/useStudy; src/lib/offline.ts atomically persists user-keyed snapshots and timestamped outbox actions before publishing optimistic state, then src/lib/cloud.ts replays idempotent writes sequentially — failed writes survive reloads and cloud refreshes overlay unacknowledged edits.
 - Signed-in pages live under `src/routes/_authenticated/` (client-only guard redirecting to /login); public pages stay top-level — keeps the landing/auth/legal pages crawlable.
 - AI endpoints verify the bearer token and the assistant builds its data snapshot server-side from the caller's own rows — never trust client-sent data.
-- The service worker registers only via `src/lib/pwa.tsx` (production, non-preview hosts) and precaches static assets only — preview and API/auth calls are never cached.
+- The service worker registers only via src/lib/pwa.tsx on production non-preview hosts; Workbox caches same-origin app-shell navigations NetworkFirst and static assets, excluding auth/API/OAuth calls and never caching user API responses — installed planners can reopen offline without leaking account data through HTML.
+- Profile edits share the user-keyed persistent outbox; cached sessions enable offline access only for previously signed-in users and expired sessions must reauthenticate before cloud replay — a cache is never authority for server permissions.
 - Pure planner rules (timer limits, streaks, bulk merge) live in `src/lib/logic.ts` with tests in `src/test/logic.test.ts` — keeps rules testable.
 - AI calls run only in server routes under `src/routes/api/` using `src/lib/ai/*.server.ts` — keeps the key off the browser.
 - Assistant quick actions are proposals only; the UI applies them after the user confirms — the AI never changes data itself.
