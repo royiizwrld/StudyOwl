@@ -23,16 +23,23 @@ export default defineConfig({
         filename: "sw.js",
         includeAssets: ["offline.html", "favicon.png", "icons/*.png"],
         workbox: {
-          // Static assets only — pages, API, auth, database and AI calls always go to the network.
+          // Static shell assets and generic HTML only; never cache private API responses.
           globPatterns: ["**/*.{js,css,woff2,png,svg,ico,webmanifest}", "offline.html"],
           navigateFallback: null,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
               urlPattern: ({ request, url }) =>
-                request.mode === "navigate" && !url.pathname.startsWith("/api/") && !url.pathname.startsWith("/~oauth"),
-              handler: "NetworkOnly",
-              options: { precacheFallback: { fallbackURL: "/offline.html" } },
+                request.mode === "navigate" && url.origin === self.location.origin &&
+                !/^\/(api|~oauth|login|signup|forgot-password|reset-password)(\/|$)/.test(url.pathname),
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "study-app-shell",
+                networkTimeoutSeconds: 3,
+                cacheableResponse: { statuses: [200] },
+                expiration: { maxEntries: 24, maxAgeSeconds: 30 * 24 * 60 * 60 },
+                precacheFallback: { fallbackURL: "/offline.html" },
+              },
             },
           ],
         },
